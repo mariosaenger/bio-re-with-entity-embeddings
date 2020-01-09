@@ -1,5 +1,10 @@
 import os
 
+# Specify location of pubtator files
+PUBTATOR_FOLDER = "../../pubtator_20190105"
+PUBTATOR_MUT2PUB_FILE = os.path.join(PUBTATOR_FOLDER, "mutation2pubtator")
+PUBTATOR_DIS2PUB_FILE = os.path.join(PUBTATOR_FOLDER, "disease2pubtator")
+
 # Specify location of CIViC files
 CIVIC_DIR = "_resources/civic"
 CIVIC_EVIDENCES_FILE = os.path.join(CIVIC_DIR, "ClinicalEvidenceSummaries.tsv")
@@ -15,9 +20,7 @@ DOCM_DATA_SET_FILE = os.path.join(DOCM_DIR, "docm.tsv")
 # Specify location of PharmaGKB files
 PHARMA_DIR = "_resources/pharma"
 PHARMA_RELATIONSHIP_FILE = os.path.join(PHARMA_DIR, "relationships.tsv")
-PHARMA_POS_PAIRS_FILE = os.path.join(PHARMA_DIR, "pharma_gkb_pos.tsv")
-PHARMA_NEG_PAIRS_FILE = os.path.join(PHARMA_DIR, "pharma_gkb_neg.tsv")
-
+PHARMA_DATA_SET_FILE = os.path.join(PHARMA_DIR, "pharma.tsv")
 
 # Specify disease ontology files
 DO_DIR = "_resources/do"

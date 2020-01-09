@@ -4,8 +4,7 @@ from pandas import DataFrame
 from typing import Dict
 
 from data.disease_ontology import DiseaseOntology
-from data.resources import DO_ONTOLOGY_FILE, PHARMA_DIR, PHARMA_POS_PAIRS_FILE, PHARMA_NEG_PAIRS_FILE, \
-    PHARMA_RELATIONSHIP_FILE
+from data.resources import DO_ONTOLOGY_FILE, PHARMA_DIR, PHARMA_DATA_SET_FILE, PHARMA_RELATIONSHIP_FILE
 from utils.log_utils import LoggingMixin
 
 
@@ -32,11 +31,8 @@ class PharmaGKB(LoggingMixin):
         negative_pairs = self._prepair_pairs(md_relations_neg, disease_ontology)
         self.log_info(f"Found {len(negative_pairs)} valid negative pairs in total")
 
-        self.log_info(f"Saving positive pairs to {PHARMA_POS_PAIRS_FILE}")
-        self._save_pairs(positive_pairs, PHARMA_POS_PAIRS_FILE)
-
-        self.log_info(f"Saving positive pairs to {PHARMA_NEG_PAIRS_FILE}")
-        self._save_pairs(negative_pairs, PHARMA_NEG_PAIRS_FILE)
+        self.log_info(f"Saving positive pairs to {PHARMA_DATA_SET_FILE}")
+        self._save_pairs(positive_pairs, PHARMA_DATA_SET_FILE)
 
     def _prepair_pairs(self, relations: DataFrame, disease_ontology: DiseaseOntology) -> Dict:
         pairs = dict()

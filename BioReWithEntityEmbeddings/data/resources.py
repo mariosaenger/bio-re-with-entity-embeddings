@@ -12,6 +12,13 @@ DOCM_VARIANTS = os.path.join(DOCM_DIR, "variants.tsv")
 DOCM_HGVS_MAPPING = os.path.join(DOCM_DIR, "hgvs_mapping.txt")
 DOCM_DATA_SET_FILE = os.path.join(DOCM_DIR, "docm.tsv")
 
+# Specify location of PharmaGKB files
+PHARMA_DIR = "_resources/pharma"
+PHARMA_RELATIONSHIP_FILE = os.path.join(PHARMA_DIR, "relationships.tsv")
+PHARMA_POS_PAIRS_FILE = os.path.join(PHARMA_DIR, "pharma_gkb_pos.tsv")
+PHARMA_NEG_PAIRS_FILE = os.path.join(PHARMA_DIR, "pharma_gkb_neg.tsv")
+
+
 # Specify disease ontology files
 DO_DIR = "_resources/do"
 DO_DOID_FILE = os.path.join(DO_DIR, "doid.obo")

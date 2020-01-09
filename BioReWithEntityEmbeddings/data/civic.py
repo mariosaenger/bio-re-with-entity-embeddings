@@ -1,17 +1,8 @@
 import pandas as pd
 
+from data.resources import CIVIC_EVIDENCES_FILE, CIVIC_VARIANT_SUMMARY_FILE, RSID_TO_HGVS_FILE, CIVIC_DATA_SET_FILE
 from utils.log_utils import LoggingMixin
 from utils.mapping_utils import RsidToHgvsMapper
-
-# Specify location of civic files
-CIVIC_DIR = "_resources/civic/2019-06/"
-
-EVIDENCES_FILE = CIVIC_DIR + "01-Jun-2019-ClinicalEvidenceSummaries.tsv"
-VARIANT_SUMMARY_FILE = CIVIC_DIR + "01-Jun-2019-VariantSummaries.tsv"
-
-RSID_TO_HGVS_FILE = "_resources/rsid_to_hgvs.txt"
-
-CIVIC_DATA_SET_FILE = CIVIC_DIR + "civic.tsv"
 
 
 class CIViC(LoggingMixin):
@@ -103,4 +94,4 @@ class CIViC(LoggingMixin):
 
 if __name__ == "__main__":
     reader = CIViC()
-    reader.prepare(EVIDENCES_FILE, VARIANT_SUMMARY_FILE, RSID_TO_HGVS_FILE, CIVIC_DATA_SET_FILE)
+    reader.prepare(CIVIC_EVIDENCES_FILE, CIVIC_VARIANT_SUMMARY_FILE, RSID_TO_HGVS_FILE, CIVIC_DATA_SET_FILE)

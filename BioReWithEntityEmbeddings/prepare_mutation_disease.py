@@ -59,6 +59,7 @@ class MutationDiseaseDataPreparation(LoggingMixin):
             # Count number of articles found by Pubtator and given in the original data sets
             ("CountPubtatorArticleclass", pdu.count_values("pubtator_articles", "num_pubtator_articles")),
             ("CountCivicArticlesPerPair", pdu.count_values("articles", "num_articles")),
+            ("LimitNumArticles", pdu.map("num_pubtator_articles", self.bucketize_article_count(), "num_articles_norm")),
 
             ("ExtractPubMedIds", pdu.extract_unique_values("pubtator_articles", pos_pubmed_file)),
 

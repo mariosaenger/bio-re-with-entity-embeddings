@@ -1,4 +1,7 @@
 pandas
+keras
+nltk
 requests
 tqdm
 scikit-learn
+tensorflow

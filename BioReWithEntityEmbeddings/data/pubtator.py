@@ -111,6 +111,41 @@ class Pubtator(LoggingMixin):
 
         return parsed_documents
 
+    def read_documents_from_file(self, input_file: str) -> List[Document]:
+        documents = []
+
+        with open(input_file, encoding="utf-8") as input_reader:
+            pubmed_id = None
+            title = None
+            abstract = None
+
+            for line in input_reader:
+                line = line.strip()
+
+                if not line:
+                    if title is not None or abstract is not None:
+                        title = title if title is not None else ""
+                        abstract = abstract if abstract is not None else ""
+                        documents.append(Document(pubmed_id, title, abstract))
+
+                        pubmed_id=title=abstract= None
+
+                    continue
+
+                title_match = Pubtator.TITLE_PATTERN.match(line)
+                if title_match:
+                    pubmed_id = title_match.group(1)
+                    title = title_match.group(2)
+                    continue
+
+                abstract_match = Pubtator.ABSTRACT_PATTERN.match(line)
+                if abstract_match:
+                    pubmed_id = abstract_match.group(1)
+                    abstract = abstract_match.group(2)
+                    continue
+
+        return documents
+
     @staticmethod
     def parse_raw_documents(raw_documents: List[str]) -> Dict[str, Document]:
         documents = dict()

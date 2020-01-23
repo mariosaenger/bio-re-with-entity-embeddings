@@ -6,6 +6,7 @@ from typing import List
 from tqdm import tqdm
 
 from data.pubtator import Pubtator
+from data.resources import PUBTATOR_OFFSET_FILE
 from utils.log_utils import LoggingMixin
 
 
@@ -81,7 +82,6 @@ class PubtatorArticleExtractor(LoggingMixin):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Pubtator article extractor")
-    parser.add_argument("offset_file", help="Path to the input pubtator offsets file")
     parser.add_argument("pubmed_id_list", help="Path to the file containing a list of pubmed ids")
     parser.add_argument("output_file", help="Path to the output file")
     parser.add_argument("threads", help="Number of threads to use", type=int)
@@ -90,4 +90,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     extractor = PubtatorArticleExtractor()
-    extractor.run(args.offset_file, args.pubmed_id_list, args.output_file, args.threads, args.batch_size)
+    extractor.run(PUBTATOR_OFFSET_FILE, args.pubmed_id_list, args.output_file, args.threads, args.batch_size)

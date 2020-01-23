@@ -4,6 +4,7 @@ import os
 PUBTATOR_FOLDER = "../../pubtator_20190105"
 PUBTATOR_MUT2PUB_FILE = os.path.join(PUBTATOR_FOLDER, "mutation2pubtator")
 PUBTATOR_DIS2PUB_FILE = os.path.join(PUBTATOR_FOLDER, "disease2pubtator")
+PUBTATOR_OFFSET_FILE = os.path.join(PUBTATOR_FOLDER, "bioconcepts2pubtator_offsets")
 
 # Specify location of CIViC files
 CIVIC_DIR = "_resources/civic"

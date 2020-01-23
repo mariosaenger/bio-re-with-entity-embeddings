@@ -521,7 +521,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Script to prepare the mutation disease data")
     parser.add_argument("output_dir", help="Path to the output directory", type=str)
     parser.add_argument("neg_sample_strategy", choices=["sample", "tree_sample", "pos_sample_one", "pos_sample_both"],
-                        type=str, help="Indicates which strategy to use for negative samples")
+                        default="tree_sample", type=str, help="Indicates which strategy to use for negative samples")
 
     args = parser.parse_args()
 

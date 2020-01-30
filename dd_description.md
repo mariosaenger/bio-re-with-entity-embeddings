@@ -1,9 +1,9 @@
-##Drug-Drug
+## Drug-Drug
 Here you can find a description, how to learn entity and entity pair embeddings for the drug-drug scenario.
 
 ### Basic preparation
 Training of entity and entity pair embeddings is based on annotations from 
-[Geneview](http://bc3.informatik.hu-berlin.de/). 
+[GeneView](http://bc3.informatik.hu-berlin.de/). 
 
 To prepare the resources for the training process the following steps have to
 be run:

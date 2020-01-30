@@ -23,6 +23,10 @@ PHARMA_DIR = "_resources/pharma"
 PHARMA_RELATIONSHIP_FILE = os.path.join(PHARMA_DIR, "relationships.tsv")
 PHARMA_DATA_SET_FILE = os.path.join(PHARMA_DIR, "pharma.tsv")
 
+# Specify location of drugbank file
+DRUGBANK_DIR = "_resources/drugbank"
+DRUGBANK_FILE = os.path.join(DRUGBANK_DIR, "full_database.xml")
+
 # Specify disease ontology files
 DO_DIR = "_resources/do"
 DO_DOID_FILE = os.path.join(DO_DIR, "doid.obo")

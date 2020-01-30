@@ -66,8 +66,7 @@ class Doc2VecLearner(LoggingMixin):
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
-        timestamp = configuration["timestamp"]
-        model_file = os.path.join(output_directory, "{}_{}.doc2vec".format(timestamp, model_name))
+        model_file = os.path.join(output_directory, f"{model_name}.embs")
 
         model.save(model_file)
         self.log_info("Succesfully saved model to %s", model_file)
@@ -75,7 +74,7 @@ class Doc2VecLearner(LoggingMixin):
         # Save a copy of the configuration file
         config_file = configuration["config_file"]
         file_name = self.get_file_name(config_file).replace(".json", "")
-        target_file  = os.path.join(output_directory, "{}_{}.config.json".format(timestamp, file_name))
+        target_file  = os.path.join(output_directory, f"{file_name}.json")
         shutil.copyfile(config_file, target_file)
 
     def get_file_name(self, file_or_path: Union[str, IOBase]) -> str:

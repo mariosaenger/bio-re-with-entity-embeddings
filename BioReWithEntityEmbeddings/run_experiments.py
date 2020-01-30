@@ -252,6 +252,7 @@ class ClassificationExperiment(LoggingMixin):
             file_writer.write("\t".join([feature, classifier] + metric_values) + "\n")
             file_writer.close()
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Entity-pair-classification")
     parser.add_argument("dataset", choices=["md", "dd"], type=str,
@@ -262,6 +263,8 @@ if __name__ == "__main__":
                         help="Path to the directory containing entity and pair embeddings for the data set")
     parser.add_argument("features", choices=["entity", "pair"], nargs="+",
                         help="Features to use / evaluate")
+    parser.add_argument("result_dir", type=str,
+                        help="Path to the output directory")
     arguments = parser.parse_args()
 
     # Create feature configuration provider
@@ -280,5 +283,7 @@ if __name__ == "__main__":
     data_set = ds_reader.read_data_set()
 
     classification = ClassificationExperiment()
-    classification.run_evaluation(arguments.dataset, data_set, documents, feature_provider, activated_features)
+    classification.run_evaluation(arguments.dataset, data_set, documents,
+                                  feature_provider, activated_features,
+                                  arguments.result_dir)
 

@@ -101,3 +101,10 @@ to be performed:
                             ../configurations/doc2vec-0500.config  \
                             <output-dir>/embeddings/ mutation-embeddings-v0500
 ~~~
+
+
+## Run experiments
+To run the classification experiments the following options exist:
+~~~
+    python run_experiments.py md <output-dir> _embs entity _result
+~~~

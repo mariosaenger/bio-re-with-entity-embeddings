@@ -53,7 +53,7 @@ class PandasUtil(object):
         return DocumentRetriever(document_dictionary, ids_column, documents_column, splitter)
 
     @staticmethod
-    def select_columns_by_prefixes(self, prefixes: List[str]):
+    def select_columns_by_prefixes(prefixes: List[str]):
         return ColumnPrefixDataFrameSelector(prefixes)
 
     @staticmethod

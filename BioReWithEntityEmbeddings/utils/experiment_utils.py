@@ -1,9 +1,10 @@
+import gc
 import numpy as np
 import os
 import pandas as pd
-from docutils.nodes import Sequential
 
 from gensim.models import KeyedVectors, Doc2Vec
+from keras import backend as K, Sequential
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.initializers import VarianceScaling
 from keras.layers import Dense, BatchNormalization, Dropout
@@ -282,7 +283,7 @@ class DatePreparationPipeline(LoggingMixin):
 
     def get_label_pipeline(self, label="label"):
         return Pipeline([
-            ("feature_selector", pdu.select_columns_by_prefixes(label)),
+            ("feature_selector", pdu.select_columns_by_prefixes([label])),
             ("data_frame_converter", pdu.to_array())
         ])
 

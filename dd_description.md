@@ -50,9 +50,9 @@ For computing drug-drug pair embeddings the following steps have to be performed
 - Prepare the articles for Doc2Vec learning
 
 ~~~
-    python prepare_doc2vec_input.py <outputdir>/gene-view/pair_instances.tsv \
+    python prepare_doc2vec_input.py <outputdir>/geneview/pair_instances.tsv \
                                      "source_id target_id" articles_str
-                                     <output-dir>/geneview/drug_articles.tsv \
+                                     <output-dir>/geneview/drug_articles.txt \
                                      <output-dir>/geneview/pair_doc2vec.txt
 ~~~
 

@@ -33,7 +33,7 @@ For computing drug entity embeddings the following steps have  to be performed:
 ~~~
     python learn_doc2vec.py <output-dir>/geneview/drug_doc2vec.txt \
                               ../configurations/doc2vec-0500.config \
-                              <output-dir>/embeddings/ drug-embeddings-v0500
+                              <output-dir>/embeddings/ drug-v0500
 ~~~
 
 

@@ -271,7 +271,7 @@ if __name__ == "__main__":
     if arguments.dataset == "md":
         feature_provider = MutationDiseaseFeatureConfigurationProvider(arguments.embedding_dir)
     elif arguments.dataset == "dd":
-        feature_provider = DrugDrugFeatureConfigurationProvider(arguments.embedding_dr)
+        feature_provider = DrugDrugFeatureConfigurationProvider(arguments.embedding_dir)
     else:
         raise NotImplementedError(f"Unsupported data set {arguments.dataset}")
 

@@ -60,7 +60,7 @@ For computing drug-drug pair embeddings the following steps have to be performed
 ~~~
     python learn_doc2vec.py <output-dir>/geneview/pair_doc2vec.txt \
                             ../configurations/doc2vec-0500.config  \
-                            <output-dir>/embeddings/ mutation-embeddings-v0500
+                            <output-dir>/embeddings/ drug-drug-v0500
 ~~~
 
 

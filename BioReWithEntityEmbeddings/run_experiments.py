@@ -35,7 +35,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.externals import joblib
 
 from utils.experiment_utils import MutationDiseaseFeatureConfigurationProvider, DrugDrugFeatureConfigurationProvider, \
-    FeatureConfigurationProvider, EvaluationResult, DataSetReader, DatePreparationPipeline
+    FeatureConfigurationProvider, EvaluationResult, DataSetReader, DataPreparationPipeline
 from utils.experiment_utils import  MultiLayerPerceptron as MLP
 from utils.log_utils import LoggingMixin
 
@@ -100,7 +100,7 @@ class ClassificationExperiment(LoggingMixin):
         train_data = train_label = val_data = val_label = test_data = test_label = None
         prev_feature = ""
 
-        pp_pipeline = DatePreparationPipeline()
+        pp_pipeline = DataPreparationPipeline()
 
         for (i, (feature_config, classifier_config)) in enumerate(experiments):
             feature_name = feature_config[1]

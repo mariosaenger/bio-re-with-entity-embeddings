@@ -3,7 +3,7 @@ Here you can find a description, how to learn entity and entity pair embeddings 
 
 ### Goldstandard preparation
 In the project we used [CIViC](https://civicdb.org/home), [DoCM](http://www.docm.info/) 
-and [PharmaGKB](https://www.pharmgkb.org/) as gold standard. Necessary preparation steps
+and [PharmGKB](https://www.pharmgkb.org/) as gold standard. Necessary preparation steps
 to use the data sets in this project can be performed by running
 
     python -m data.civic

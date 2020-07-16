@@ -206,10 +206,10 @@ class DrugDrugFeatureConfigurationProvider(FeatureConfigurationProvider):
         ]
 
 
-class DatePreparationPipeline(LoggingMixin):
+class DataPreparationPipeline(LoggingMixin):
 
     def __init__(self):
-        super(DatePreparationPipeline, self).__init__()
+        super(DataPreparationPipeline, self).__init__()
 
     def get_data_pipeline(self, feature: str, configuration: Dict, document_dict: Dict[str, Document]):
         feature_columns = []
@@ -346,8 +346,8 @@ class MultiLayerPerceptron(LoggingMixin):
                 if batch_normalization:
                     model.add(BatchNormalization())
 
-                if drop_out is not None:
-                        model.add(Dropout(drop_out, seed=773))
+                if drop_out is not None and drop_out:
+                        model.add(Dropout(0.25, seed=773))
 
 
             model.add(Dense(target_classes, activation="softmax",

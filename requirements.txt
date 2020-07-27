@@ -1,7 +1,6 @@
-pandas
-keras
+gensim
 nltk
+pandas
 requests
-tqdm
 scikit-learn
-tensorflow
+tqdm

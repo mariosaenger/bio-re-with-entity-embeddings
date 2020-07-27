@@ -16,14 +16,14 @@ class PubtatorArticleExtractor(LoggingMixin):
         super(PubtatorArticleExtractor, self).__init__()
 
     def run(self, offset_file: str, pubmed_ids_file: str, output_file: str, threads: int, batch_size: int):
-        self.log_info("Start extraction of pubtator documents from %s", offset_file)
-        self.log_info("Reading pubmed ids from %s", pubmed_ids_file)
+        self.log_info("Start extraction of PubTator documents from %s", offset_file)
+        self.log_info("Reading PubMed identifiers from %s", pubmed_ids_file)
 
         with open(pubmed_ids_file, "r", encoding="utf-8") as pubmed_id_reader:
             pubmed_ids = dict([(line.strip(), 1) for line in pubmed_id_reader.readlines()])
             pubmed_id_reader.close()
 
-        self.log_info("Found %s distinct pubmed ids", len(pubmed_ids))
+        self.log_info("Found %s distinct PubMed ids", len(pubmed_ids))
 
         self.log_info("Start reading documents from %s", offset_file)
         documents = Pubtator().read_raw_documents_from_offsets(offset_file)

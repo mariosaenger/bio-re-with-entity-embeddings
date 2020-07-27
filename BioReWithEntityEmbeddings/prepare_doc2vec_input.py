@@ -18,7 +18,7 @@ class Doc2VecPreparation(LoggingMixin):
 
         pubtator = Pubtator()
 
-        self.log_info("Reading pubtator articles from %s", article_file)
+        self.log_info("Reading PubTator articles from %s", article_file)
         raw_documents = pubtator.read_raw_documents_from_offsets(article_file)
         self.log_info("Found %s raw documents in total", len(raw_documents))
 

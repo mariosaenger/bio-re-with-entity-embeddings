@@ -46,7 +46,7 @@ class Doc2VecLearner(LoggingMixin):
 
         for iteration in range(configuration["iterations"]):
             self.log_info("Starting training iteration %s", (iteration + 1))
-            model.train(tagged_documents, total_examples=len(tagged_documents), epochs=model.iter)
+            model.train(tagged_documents, total_examples=len(tagged_documents), epochs=1)
 
             # Reduce learning rate for the next iteration
             if configuration["adapt_learning_rate"]:
@@ -69,7 +69,7 @@ class Doc2VecLearner(LoggingMixin):
         model_file = os.path.join(output_directory, f"{model_name}.embs")
 
         model.save(model_file)
-        self.log_info("Succesfully saved model to %s", model_file)
+        self.log_info("Saved model to %s", model_file)
 
         # Save a copy of the configuration file
         config_file = configuration["config_file"]

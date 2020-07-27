@@ -1,11 +1,11 @@
 import re
+import pandas as pd
 
 from concurrent.futures.thread import ThreadPoolExecutor
-from typing import List, Dict
-import pandas as pd
 
 from pandas import DataFrame
 from tqdm import tqdm
+from typing import List, Dict
 
 from utils.log_utils import LoggingMixin
 
@@ -47,6 +47,13 @@ class Pubtator(LoggingMixin):
         mutation_overview["rs_identifier"] = mutation_overview.index
 
         return mutation_overview
+
+    def build_drug_overview(self, drug2pubtator_file: str) -> DataFrame:
+        drug_data = pd.read_csv(drug2pubtator_file, sep="\t", encoding="utf-8", memory_map=True)
+        drug_overview = self._build_overview(drug_data, "MeshID")
+        drug_overview["MeshID"] = drug_overview.index
+
+        return drug_overview
 
     def read_mutation2pubtator_file(self, mutation2pubtator_file: str) -> DataFrame:
         mutation_data = pd.read_csv(mutation2pubtator_file, sep="\t", encoding="utf-8", memory_map=True)
@@ -183,7 +190,7 @@ class Pubtator(LoggingMixin):
         group_by_id = data_set.groupby([id_column])
         for id, rows in tqdm(group_by_id, total=len(group_by_id)):
             ids.append(id)
-            articles.append(set(rows["PMID"].unique()))
+            articles.append(set([str(id) for id in rows["PMID"].unique()]))
 
         return pd.DataFrame({"articles": articles}, index=ids)
 
@@ -199,3 +206,27 @@ class Pubtator(LoggingMixin):
             return rs_identifier.strip()
 
         return value
+
+
+class PubtatorPreparationUtils(LoggingMixin):
+
+    @staticmethod
+    def create_pubmed_id_to_entity_map(overview_data: DataFrame) -> DataFrame:
+        pubmed_to_entity_map = dict()
+
+        for id, row in tqdm(overview_data.iterrows(), total=len(overview_data)):
+            pubmed_articles = row["articles"]
+            for pubmed_id in pubmed_articles:
+                if pubmed_id not in pubmed_to_entity_map:
+                    pubmed_to_entity_map[pubmed_id] = {"entity_ids": set() }
+
+                pubmed_to_entity_map[pubmed_id]["entity_ids"].add(id)
+
+        return pd.DataFrame.from_dict(pubmed_to_entity_map, orient="index")
+
+    @staticmethod
+    def set_to_string(values):
+        if len(values) == 0:
+            return None
+
+        return ";;;".join([str(value) for value in sorted(values)])

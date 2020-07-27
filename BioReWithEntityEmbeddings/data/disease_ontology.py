@@ -110,11 +110,10 @@ class DiseaseOntology(LoggingMixin):
         return prefixes
 
     def _initialize_mesh_to_doid_map(self):
-        self.log_info("Initializing mesh to doid mapping")
         diseases_with_mesh = self.ontology[self.ontology["mesh_terms"].notnull()]
         self.mesh_to_doid_map = dict()
 
-        for i, row in tqdm(diseases_with_mesh.iterrows(), total=len(diseases_with_mesh)):
+        for i, row in diseases_with_mesh.iterrows():
             for mesh in row["mesh_terms"].split(";"):
                 if mesh not in self.mesh_to_doid_map:
                     self.mesh_to_doid_map[mesh] = set()
@@ -151,40 +150,6 @@ class DiseaseOntologyHandler(LoggingMixin):
 
         return ontology_df
 
-    def prepare_cancer_ontology(self, ontology: DataFrame, output_dir: str) -> DataFrame:
-        self.log_info(f"Prepare cancer ontology")
-        cancer_df = ontology[ontology["parent_paths"].str.contains("DOID:162#") == True]
-
-        normalized_paths = []
-        path_depths = []
-
-        for id, row in tqdm(cancer_df.iterrows(), total=len(cancer_df)):
-            cancer_paths = []
-            for path in row["parent_paths"].split(";"):
-                if "DOID:162#" in path:
-                    cancer_paths.append(path.replace("DOID:4#>DOID:14566#>DOID:162#>", "") + ">" + id + "#")
-                else:
-                    pass
-                    #self.log_warn(f"Found non-cancer path for {id}: {path}")
-
-            if len(cancer_paths) > 0:
-                depth = max([len(path.split(">")) for path in cancer_paths])
-                cancer_paths = ";".join(cancer_paths)
-            else:
-                depth = -1
-                cancer_paths = None
-
-            normalized_paths.append(cancer_paths)
-            path_depths.append(depth)
-
-        cancer_df["cancer_path"] = normalized_paths
-        cancer_df["cancer_depth"] = path_depths
-
-        cancer_file = os.path.join(output_dir, "ontology_cancer.tsv")
-        cancer_df.to_csv(cancer_file, sep="\t", encoding="utf8", index_label="id")
-
-        return cancer_df
-
     def parse_obo_file(self, obo_file: str) -> DataFrame:
         ontology = pd.DataFrame(columns=["doid", "name", "alternative_ids", "parent_ids", "mesh_terms"])
 
@@ -215,7 +180,8 @@ class DiseaseOntologyHandler(LoggingMixin):
                         continue
 
                     if ";" in synonym:
-                        print(synonym)
+                        #print(synonym)
+                        pass
 
                     name_end_index = synonym.find("\" exact []")
                     synonym = synonym.replace("\" exact []", "")[1:name_end_index]
@@ -319,13 +285,4 @@ class DiseaseOntologyHandler(LoggingMixin):
 if __name__ == "__main__":
     handler = DiseaseOntologyHandler()
     ontology = handler.prepare_ontology(DO_DOID_FILE, DO_DIR)
-
-    handler.prepare_cancer_ontology(ontology, DO_DIR)
-
-    ontology = DiseaseOntology(DO_ONTOLOGY_FILE)
-    prefixes = sorted(ontology.get_path_prefixes_by_doid("DOID:50204"))
-    print("\n".join(prefixes))
-
-    parents = sorted(ontology.get_paths("DOID:50204"))
-    print("\n".join(parents))
 

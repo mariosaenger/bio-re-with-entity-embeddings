@@ -63,15 +63,3 @@ For computing drug-drug pair embeddings the following steps have to be performed
                             <output-dir>/embeddings/ drug-drug-v0500
 ~~~
 
-
-### Run experiments
-To run the classification experiments the following options exist:
-- Run entity embeddings experiments
-~~~
-    python run_experiments.py md <output-dir> <embedding-folder> entity _result
-~~~
-- Run pair embeddings experiments
-~~~
-    python run_experiments.py md <output-dir> <embedding-folder> pair _result
-~~~
-

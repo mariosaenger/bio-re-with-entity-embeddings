@@ -1,17 +1,6 @@
 ## Mutation-Disease
 Here you can find a description, how to learn entity and entity pair embeddings for the mutation-disease scenario.
 
-### Goldstandard preparation
-In the project we used [CIViC](https://civicdb.org/home), [DoCM](http://www.docm.info/) 
-and [PharmGKB](https://www.pharmgkb.org/) as gold standard. Necessary preparation steps
-to use the data sets in this project can be performed by running
-
-    python -m data.civic
-    python -m data.docm
-    python -m data.pharma
-
-The location of the data source resources can be configured in <code>data/resources.py</code>.
-
 ### Basic preparation
 Training of entity and entity pair embeddings is based on annotations from 
 [Pubtator](ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTator/). Download and extract 
@@ -24,10 +13,6 @@ be run:
 - Basic pubtator preparation
 
    <code>python prepare_pubtator.py <output-dir></code>
-
-- Prepare and integrate gold standard data sets
-
-    <code>python prepare_mutation_disease.py <output-dir></code>
 
 ### Learning of entity embeddings
 For computing entity embeddings for diseases and mutations the following steps have 
@@ -97,16 +82,4 @@ to be performed:
     python learn_doc2vec.py <output-dir>/pair-ds/pair_doc2vec.txt \
                             ../configurations/doc2vec-0500.config  \
                             <output-dir>/embeddings/ mutation-disease-v0500
-~~~
-
-
-### Run experiments
-To run the classification experiments the following options exist:
-- Run entity embeddings experiments
-~~~
-    python run_experiments.py md <output-dir> <embedding-folder> entity _result
-~~~
-- Run pair embeddings experiments
-~~~
-    python run_experiments.py md <output-dir> <embedding-folder> pair _result
 ~~~

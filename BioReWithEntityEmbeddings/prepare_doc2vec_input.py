@@ -47,9 +47,9 @@ class Doc2VecPreparation(LoggingMixin):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Doc2VecPreparator")
     parser.add_argument("input_file", help="Path to the input (overview) file")
-    parser.add_argument("id_column", help="Names of the entity columns")
-    parser.add_argument("article_column", help="Name of the column with the pubmed article ids")
-    parser.add_argument("article_file", help="Path to the file containing the pub med articles in pubtator format")
+    parser.add_argument("id_column", help="Names of the id columns")
+    parser.add_argument("article_column", help="Name of the column with the PubMed article ids")
+    parser.add_argument("article_file", help="Path to the file containing the PubMed articles in pubtator format")
     parser.add_argument("output_file", help="Path to the output file")
 
     args = parser.parse_args()

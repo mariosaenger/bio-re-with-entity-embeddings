@@ -1,5 +1,7 @@
 import argparse
 import os
+from typing import Set, Callable
+
 import pandas as pd
 
 from pandas import DataFrame
@@ -9,9 +11,76 @@ from tqdm import tqdm
 from data.disease_ontology import DiseaseOntology
 from data.pubtator import Pubtator
 from data.resources import DO_ONTOLOGY_FILE, DO_CANCER_ONTOLOGY_FILE, PUBTATOR_DIS2PUB_FILE, PUBTATOR_MUT2PUB_FILE
-from prepare_mutation_disease import MeshTermToDoidMapper, CancerDiseaseFilter
 from utils.log_utils import LoggingMixin
-from utils.pandas_utils import PandasUtil as pdu
+from utils.pandas_utils import PandasUtil as pdu, PipelineMixin
+
+
+class MeshTermToDoidMapper(PipelineMixin):
+
+    def __init__(self, disease_ontology: DiseaseOntology, mesh_extractor: Callable, source_id_extractor: Callable):
+        super(MeshTermToDoidMapper, self).__init__()
+        self.disease_ontology = disease_ontology
+        self.mesh_extractor = mesh_extractor
+        self.source_id_extractor = source_id_extractor
+
+    def transform(self, data: DataFrame, y=None):
+        self.log_info("Adding doid id to %s instances", len(data))
+        num_unknown_doid = 0
+
+        new_data_map = dict()
+        for id, row in tqdm(data.iterrows(), total=len(data)):
+            disease_mesh_term = self.mesh_extractor(id, row)
+
+            doids = self.disease_ontology.get_doid_by_mesh(disease_mesh_term)
+            if len(doids)  > 0:
+                source_id = self.source_id_extractor(id, row)
+                for doid in doids:
+                    row_copy = row.copy()
+                    row_copy["doid"] = doid
+
+                    new_row_id = source_id + "#" + doid
+                    row_copy["id_doid"] = new_row_id
+
+                    if new_row_id in new_data_map:
+                        a1 = row_copy["articles"]
+                        a2 = row_copy["articles"]
+                        row_copy["articles"] = a1.union(a2)
+
+                    new_data_map[new_row_id] = row_copy
+            else:
+                num_unknown_doid = num_unknown_doid + 1
+
+        new_data = DataFrame(list(new_data_map.values()))
+        new_data.index = new_data["id_doid"]
+        new_data = new_data.drop("id_doid", axis=1)
+
+        self.log_info("Can't find DOID for %s of %s entries", num_unknown_doid, len(data))
+        self.log_info("Finished mesh to doid mapping. New data set has %s instances", len(new_data))
+
+        return new_data
+
+
+class CancerDiseaseFilter(PipelineMixin):
+
+    def __init__(self, cancer_ids: Set, doid_column="doid"):
+        super(CancerDiseaseFilter, self).__init__()
+        self.cancer_ids = cancer_ids
+        self.doid_column = doid_column
+
+    def transform(self, data: DataFrame, y=None):
+        self.log_info("Scanning data set for cancer related pairs (%s cancer ids)", len(self.cancer_ids))
+        #self.log_info("Cancer ids: \n%s", "\n".join(["'" + id + "'" for id in self.cancer_ids]))
+
+        rows_to_remove = []
+        other_ids = set()
+        for i, row in tqdm(data.iterrows(), total=len(data)):
+            if row[self.doid_column] not in self.cancer_ids:
+                rows_to_remove.append(i)
+                other_ids.add(row[self.doid_column])
+
+        data = data.drop(rows_to_remove)
+        self.log_info("Removed %s instances (%s cancer instances remain)", len(rows_to_remove), len(data))
+        return data
 
 
 class PubtatorPreparation(LoggingMixin):

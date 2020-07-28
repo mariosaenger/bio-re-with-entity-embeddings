@@ -64,7 +64,11 @@ if __name__ == "__main__":
             )
     ):
         pub_preparation = CooccurrencePreparator()
-        pub_preparation.run(args.working_dir, args.source_type, args.target_type)
+        pub_preparation.run(
+            working_directory=working_dir,
+            source_type=args.source_type,
+            target_type=args.target_type
+        )
 
         # Skipping caching for all following steps to prevent unintended caching issues
         use_caching = False

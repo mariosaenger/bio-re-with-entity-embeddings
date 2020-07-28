@@ -24,17 +24,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-
-    entity_ds_preparator: EntityDataSetPreparation = None
-    if args.entity_type == "mutation":
-        entity_ds_preparator = PubtatorMutationDataSetPreparation()
-    elif args.entity_type == "drug":
-        entity_ds_preparator = PubtatorDrugOccurrencesPreparation()
-    elif args.entity_type == "disease":
-        entity_ds_preparator = PubtatorDiseaseOccurrencesPreparation()
-    else:
-        raise NotImplementedError(f"Unsupported entity type {args.entity_type}")
-
     logger = LogUtil.create_logger("prepare_pair_dataset", logging.INFO)
     logger.info(f"Start preparation of {args.entity_type} data set")
 
@@ -58,7 +47,19 @@ if __name__ == "__main__":
                 pubmed2entity_file.exists()
             )
     ):
-        entity_ds_preparator.run(args.working_dir)
+        entity_ds_preparator: EntityDataSetPreparation = None
+        if args.entity_type == "mutation":
+            entity_ds_preparator = PubtatorMutationDataSetPreparation()
+        elif args.entity_type == "drug":
+            entity_ds_preparator = PubtatorDrugOccurrencesPreparation()
+        elif args.entity_type == "disease":
+            entity_ds_preparator = PubtatorDiseaseOccurrencesPreparation()
+        else:
+            raise NotImplementedError(f"Unsupported entity type {args.entity_type}")
+
+        entity_ds_preparator.run(
+            working_dir=working_dir
+        )
 
         # Skipping caching for all following steps to prevent unintended caching issues
         use_caching = False
@@ -74,7 +75,13 @@ if __name__ == "__main__":
             not articles_file.exists()
     ):
         extractor = PubtatorArticleExtractor()
-        extractor.run(PUBTATOR_OFFSET_FILE, str(pubmed_ids_file), str(articles_file), 16, 2000)
+        extractor.run(
+            offset_file=PUBTATOR_OFFSET_FILE,
+            pubmed_ids_file=pubmed_ids_file,
+            output_file=articles_file,
+            threads=16,
+            batch_size=2000
+        )
 
         # Skipping caching for all following steps to prevent unintended caching issues
         use_caching = False

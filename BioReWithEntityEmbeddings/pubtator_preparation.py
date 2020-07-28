@@ -18,7 +18,7 @@ class EntityDataSetPreparation(LoggingMixin):
     def __init__(self):
         super(EntityDataSetPreparation, self).__init__()
 
-    def run(self, working_dir: str):
+    def run(self, working_dir: Path):
         raise NotImplementedError("run() has to be implemented by sub-classes")
 
 
@@ -27,11 +27,11 @@ class PubtatorMutationDataSetPreparation(EntityDataSetPreparation):
     def __init__(self):
         super(PubtatorMutationDataSetPreparation, self).__init__()
 
-    def run(self, working_directory: str):
+    def run(self, working_directory: Path):
         self.log_info("Start preparation of PubMed mutation occurrences")
 
-        entity_ds_dir = os.path.join(working_directory, "mutation")
-        os.makedirs(entity_ds_dir, exist_ok=True)
+        entity_ds_dir = working_directory / "mutation"
+        os.makedirs(str(entity_ds_dir), exist_ok=True)
 
         pubtator = Pubtator()
 
@@ -39,28 +39,42 @@ class PubtatorMutationDataSetPreparation(EntityDataSetPreparation):
         mutation_overview = pubtator.build_mutation_overview(PUBTATOR_MUT2PUB_FILE)
         self.log_info("Found %s mutations in total", len(mutation_overview))
 
-        mutation_instances_file = os.path.join(entity_ds_dir, "instances.tsv")
-        mutation_pubmed_ids_file = os.path.join(entity_ds_dir, "pubmed_ids.txt")
+        mutation_instances_file = entity_ds_dir / "instances.tsv"
+        mutation_pubmed_ids_file = entity_ds_dir / "pubmed_ids.txt"
 
         self.log_info("Saving mutation information to entity data set directory")
         mutation_pipeline = Pipeline([
-            ("ConvertArticlesToString", pdu.map("articles", PubtatorPreparationUtils.set_to_string, "articles_str")),
-            ("ExtractPubMedIds", pdu.extract_unique_values("articles", mutation_pubmed_ids_file)),
-            ("RenameIdColumn", pdu.rename_columns({"rs_identifier": "entity_id"}))
+            (
+                "ConvertArticlesToString",
+                pdu.map("articles", PubtatorPreparationUtils.set_to_string, "articles_str")
+            ),
+            (
+                "ExtractPubMedIds",
+                pdu.extract_unique_values("articles", mutation_pubmed_ids_file)
+            ),
+            (
+                "RenameIdColumn",
+                pdu.rename_columns({"rs_identifier": "entity_id"})
+            )
         ])
 
         mutation_overview = mutation_pipeline.fit_transform(mutation_overview)
-        mutation_overview.to_csv(mutation_instances_file, sep="\t", columns=["entity_id", "articles_str"], index=False)
+        mutation_overview.to_csv(mutation_instances_file, sep="\t",
+                                 columns=["entity_id", "articles_str"], index=False)
 
         self.log_info("Create mapping from PubMed id to mutation id")
         pubmed_to_mutation = PubtatorPreparationUtils.create_pubmed_id_to_entity_map(mutation_overview)
         pipeline = Pipeline([
-            ("ConvertEntityIdsToString", pdu.map("entity_ids", PubtatorPreparationUtils.set_to_string, "entity_ids_str")),
+            (
+                "ConvertEntityIdsToString",
+                pdu.map("entity_ids", PubtatorPreparationUtils.set_to_string, "entity_ids_str")
+            ),
         ])
         pubmed_to_mutation = pipeline.fit_transform(pubmed_to_mutation)
 
-        pubmed2entity_file = os.path.join(entity_ds_dir, "pubmed2entity.tsv")
-        pubmed_to_mutation.to_csv(pubmed2entity_file,  sep="\t", columns=["entity_ids_str"], index_label="pubmed_id")
+        pubmed2entity_file = entity_ds_dir / "pubmed2entity.tsv"
+        pubmed_to_mutation.to_csv(pubmed2entity_file,  sep="\t",
+                                  columns=["entity_ids_str"], index_label="pubmed_id")
 
 
 class PubtatorDrugOccurrencesPreparation(EntityDataSetPreparation):
@@ -68,11 +82,11 @@ class PubtatorDrugOccurrencesPreparation(EntityDataSetPreparation):
     def __init__(self):
         super(PubtatorDrugOccurrencesPreparation, self).__init__()
 
-    def run(self, working_directory: str):
+    def run(self, working_directory: Path):
         self.log_info("Start preparation of drug occurrences")
 
-        entity_ds_dir = os.path.join(working_directory, "drug")
-        os.makedirs(entity_ds_dir, exist_ok=True)
+        entity_ds_dir = working_directory / "drug"
+        os.makedirs(str(entity_ds_dir), exist_ok=True)
 
         pubtator = Pubtator()
 
@@ -84,17 +98,29 @@ class PubtatorDrugOccurrencesPreparation(EntityDataSetPreparation):
         self.log_info("Found %s unique diseases in total", len(drug_data))
 
         self.log_info("Saving disease information to entity data set directory")
-        drug_pubmed_ids_file = os.path.join(entity_ds_dir, "pubmed_ids.txt")
+        drug_pubmed_ids_file = entity_ds_dir / "pubmed_ids.txt"
 
         pipeline = Pipeline([
-            ("MapMashTermToDrugBankId", MeshTermToDrugBankIdMapper(mesh_to_drugbank_mapping)),
-            ("ConvertArticlesToString", pdu.map("articles", PubtatorPreparationUtils.set_to_string, "articles_str")),
-            ("RenameIdColumn", pdu.rename_columns({"MeshID": "entity_id"})),
-            ("ExtractPubMedIds", pdu.extract_unique_values("articles", drug_pubmed_ids_file)),
+            (
+                "MapMashTermToDrugBankId",
+                MeshTermToDrugBankIdMapper(mesh_to_drugbank_mapping)
+            ),
+            (
+                "ConvertArticlesToString",
+                pdu.map("articles", PubtatorPreparationUtils.set_to_string, "articles_str")
+            ),
+            (
+                "RenameIdColumn",
+                pdu.rename_columns({"MeshID": "entity_id"})
+            ),
+            (
+                "ExtractPubMedIds",
+                pdu.extract_unique_values("articles", drug_pubmed_ids_file)
+            ),
         ])
         drug_data = pipeline.fit_transform(drug_data)
 
-        drug_instances_file = os.path.join(entity_ds_dir, "instances.tsv")
+        drug_instances_file = entity_ds_dir / "instances.tsv"
         drug_data.to_csv(drug_instances_file, sep="\t", columns=["entity_id", "articles_str"], index=False)
 
         self.log_info("Create mapping from PubMed id to Drug id")
@@ -105,7 +131,7 @@ class PubtatorDrugOccurrencesPreparation(EntityDataSetPreparation):
         ])
         pubmed_to_drug = pipeline.fit_transform(pubmed_to_drug)
 
-        pubmed2entity_file = os.path.join(entity_ds_dir, "pubmed2entity.tsv")
+        pubmed2entity_file = entity_ds_dir / "pubmed2entity.tsv"
         pubmed_to_drug.to_csv(pubmed2entity_file, sep="\t", columns=["entity_ids_str"], index_label="pubmed_id")
 
 
@@ -114,11 +140,11 @@ class PubtatorDiseaseOccurrencesPreparation(EntityDataSetPreparation):
     def __init__(self):
         super(PubtatorDiseaseOccurrencesPreparation, self).__init__()
 
-    def run(self, working_directory: str):
+    def run(self, working_directory: Path):
         self.log_info("Start preparation of disease occurrences")
 
-        entity_ds_dir = os.path.join(working_directory, "disease")
-        os.makedirs(entity_ds_dir, exist_ok=True)
+        entity_ds_dir = working_directory / "disease"
+        os.makedirs(str(entity_ds_dir), exist_ok=True)
 
         self.disease_ontology = DiseaseOntology(DO_ONTOLOGY_FILE)
         pubtator = Pubtator()
@@ -128,31 +154,48 @@ class PubtatorDiseaseOccurrencesPreparation(EntityDataSetPreparation):
         disease_overview = pubtator.build_disease_overview(PUBTATOR_DIS2PUB_FILE)
         self.log_info("Found %s unique diseases in total", len(disease_overview))
 
-        disease_instances_file = os.path.join(entity_ds_dir, "instances.tsv")
-        disease_pubmed_ids_file = os.path.join(entity_ds_dir, "pubmed_ids.txt")
+        disease_pubmed_ids_file = entity_ds_dir / "pubmed_ids.txt"
 
         self.log_info("Saving disease information to entity data set directory")
         disease_pipeline = Pipeline([
-            ("MapMashTermTodoDoid", MeshTermToDoidMapper(self.disease_ontology)),
-            ("FilterEntriesWithoutDoid", pdu.not_null("doid")),
-            ("ConvertArticlesToString", pdu.map("articles", PubtatorPreparationUtils.set_to_string, "articles_str")),
-            ("RenameIdColumn", pdu.rename_columns({"doid": "entity_id"})),
-            ("ExtractPubMedIds", pdu.extract_unique_values("articles", disease_pubmed_ids_file)),
+            (
+                "MapMashTermTodoDoid",
+                MeshTermToDoidMapper(self.disease_ontology)
+            ),
+            (
+                "FilterEntriesWithoutDoid",
+                pdu.not_null("doid")
+            ),
+            (
+                "ConvertArticlesToString",
+                pdu.map("articles", PubtatorPreparationUtils.set_to_string, "articles_str")
+            ),
+            (
+                "RenameIdColumn",
+                pdu.rename_columns({"doid": "entity_id"})
+            ),
+            (
+                "ExtractPubMedIds",
+                pdu.extract_unique_values("articles", disease_pubmed_ids_file)
+            ),
         ])
 
         disease_overview = disease_pipeline.fit_transform(disease_overview)
 
-        disease_instances_file = os.path.join(entity_ds_dir, "instances.tsv")
+        disease_instances_file = entity_ds_dir / "instances.tsv"
         disease_overview.to_csv(disease_instances_file, sep="\t", columns=["entity_id", "articles_str"], index=False)
 
         self.log_info("Create mapping from PubMed id to disease id")
         pubmed_to_disease = PubtatorPreparationUtils.create_pubmed_id_to_entity_map(disease_overview)
         pipeline = Pipeline([
-            ("ConvertEntityIdsToString", pdu.map("entity_ids", PubtatorPreparationUtils.set_to_string, "entity_ids_str")),
+            (
+                "ConvertEntityIdsToString",
+                pdu.map("entity_ids", PubtatorPreparationUtils.set_to_string, "entity_ids_str")
+            ),
         ])
         pubmed_to_disease = pipeline.fit_transform(pubmed_to_disease)
 
-        pubmed2entity_file = os.path.join(entity_ds_dir, "pubmed2entity.tsv")
+        pubmed2entity_file = entity_ds_dir / "pubmed2entity.tsv"
         pubmed_to_disease.to_csv(pubmed2entity_file,  sep="\t", columns=["entity_ids_str"], index_label="pubmed_id")
 
 

@@ -45,9 +45,10 @@ We support entity types <i>disease</i>, <i>drug</i>, and <i>mutation</i>.
 ~~~
 python learn_embeddings.py --input_file _out/mutation-disease/doc2vec_input.txt \
                            --config_file ../resources/configurations/doc2vec-0500.config \
-                           --model_name mutation-disease-v0500
+                           --model_name mutation-disease-v0500 \
                            --output_dir _out/mutation-disease  
 ~~~
+Example configurations can be found in <i>resources/configurations</i>.
 
 ## Citation
 Please use the following bibtex entry to cite our work:

@@ -1,5 +1,6 @@
 import pandas as pd
 
+from pathlib import Path
 from pandas import DataFrame
 from sklearn.base import TransformerMixin
 from tqdm import tqdm
@@ -12,7 +13,7 @@ from utils.log_utils import LoggingMixin
 class PandasUtil(object):
 
     @staticmethod
-    def extract_unique_values(column:str, output_file: str, values_extractor=lambda x: x):
+    def extract_unique_values(column:str, output_file: Path, values_extractor=lambda x: x):
         return UniqueValueExtractor(column, output_file, values_extractor)
 
     @staticmethod
@@ -84,7 +85,7 @@ class RenameColumns(PipelineMixin):
 
 class UniqueValueExtractor(PipelineMixin):
 
-    def __init__(self, column: str, output_file: str, values_extractor: Callable):
+    def __init__(self, column: str, output_file: Path, values_extractor: Callable):
         super(UniqueValueExtractor, self).__init__()
 
         self.column = column
@@ -98,7 +99,7 @@ class UniqueValueExtractor(PipelineMixin):
         unique_values = list(set(unique_values))
         unique_values.sort()
 
-        with open(self.output_file, 'w', encoding="utf-8") as output_file:
+        with open(str(self.output_file), 'w', encoding="utf-8") as output_file:
             output_file.writelines(["%s\n" % value for value in unique_values])
             output_file.close()
 

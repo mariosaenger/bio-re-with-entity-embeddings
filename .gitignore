@@ -133,5 +133,6 @@ dmypy.json
 
 *_resources
 *_out
+*_cache
 .sync_*
 *geneview*

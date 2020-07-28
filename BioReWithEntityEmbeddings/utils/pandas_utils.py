@@ -11,6 +11,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from tqdm import tqdm
 from typing import Callable, List, Dict, Any, Set
 
+from data.disease_ontology import DiseaseOntology
 from utils.log_utils import LoggingMixin
 
 
@@ -397,3 +398,79 @@ class DataFrameToArrayConverter(PipelineMixin):
 
     def transform(self, X, y=None):
         return X.values
+
+
+class MeshTermToDoidMapper(PipelineMixin):
+
+    def __init__(self, disease_ontology: DiseaseOntology):
+        super(MeshTermToDoidMapper, self).__init__()
+        self.disease_ontology = disease_ontology
+
+    def transform(self, data: DataFrame, y=None):
+        self.log_info("Adding DOID id to %s instances", len(data))
+        num_unknown_doid = 0
+
+        new_data_map = dict()
+        for mesh, row in tqdm(data.iterrows(), total=len(data)):
+            doids = self.disease_ontology.get_doid_by_mesh(mesh)
+            if len(doids) > 0:
+                for doid in doids:
+                    row_copy = row.copy()
+                    row_copy["doid"] = doid
+
+                    if doid in new_data_map:
+                        a1 = row_copy["articles"]
+                        a2 = new_data_map[doid]["articles"]
+                        row_copy["articles"] = a1.union(a2)
+
+                    new_data_map[doid] = row_copy
+            else:
+                num_unknown_doid = num_unknown_doid + 1
+
+        new_data = DataFrame(list(new_data_map.values()))
+        new_data.index = new_data["doid"]
+
+        self.log_info("Can't find DOID for %s of %s entries", num_unknown_doid, len(data))
+        self.log_info("Finished MeSH to DOID mapping. New data set has %s instances", len(new_data))
+
+        return new_data
+
+
+class MeshTermToDrugBankIdMapper(PipelineMixin):
+
+    def __init__(self, mesh_to_drugbank: pd.DataFrame):
+        super(MeshTermToDrugBankIdMapper, self).__init__()
+        self.mesh_to_drugbank = mesh_to_drugbank
+
+    def transform(self, data: pd.DataFrame, y=None):
+        self.log_info(f"Adding DrugBank identifier to {len(data)} instances")
+
+        new_data_map = dict()
+        for mesh, row in tqdm(data.iterrows(), total=len(data)):
+            drugbank_ids = self.get_drugbank_ids_by_mesh(mesh)
+
+            if len(drugbank_ids) > 0:
+                for db_id in drugbank_ids:
+                    row_copy = row.copy()
+                    row_copy["drugbank_id"] = db_id
+
+                    if db_id in new_data_map:
+                        a1 = row_copy["articles"]
+                        a2 = new_data_map[db_id]["articles"]
+                        row_copy["articles"] = a1.union(a2)
+
+                    new_data_map[db_id] = row_copy
+
+        new_data = pd.DataFrame(list(new_data_map.values()))
+        new_data.index = new_data["drugbank_id"]
+        new_data = new_data.drop("mesh_db_id", axis=1)
+
+        self.log_info("Finished MeSH to DrugBank id mapping. New data set has %s instances", len(new_data))
+
+        return new_data
+
+    def get_drugbank_ids_by_mesh(self, mesh: str) -> List[str]:
+        if mesh in self.mesh_to_drugbank.index:
+            return self.mesh_to_drugbank.loc[mesh]["DrugBankIDs"].split("|")
+
+        return []

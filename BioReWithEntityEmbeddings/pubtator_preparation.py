@@ -230,12 +230,12 @@ class CooccurrencePreparator(LoggingMixin):
             for pair_id in pair_ids:
                 if pair_id in pair2pubmed:
                     pair_entry = pair2pubmed[pair_id]
-                    pair_entry["pubmed_ids_str"] += ";;;" + str(pubmed_id)
+                    pair_entry["articles_str"] += ";;;" + str(pubmed_id)
                 else:
                     pair_entry = {
                         "source_id": pair_id[0],
                         "target_id": pair_id[1],
-                        "pubmed_ids_str": str(pubmed_id)
+                        "articles_str": str(pubmed_id)
                     }
 
                 pair2pubmed[pair_id] = pair_entry

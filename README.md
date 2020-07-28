@@ -9,10 +9,19 @@ mentioning a certain biomedical entity (e.g. mutation <i>V600E</i>) or pair of e
 title or abstract. We concatenate all articles mention the entity / entity pair and apply paragraph vectors
 (<i>Le and Mikolov, 2014</i>) to learn an embedding for each distinct entity resp. pair of entities.
 
+| [Usage](#usage) | [Citation](#citation) | [Acknowledgements](#acknowledgements) |
+ 
 ## Usage
 For the computing entity and entity pair embeddings we utilize the complete PubMed corpus and make 
 use of the data and entity annotations provided by 
 <a href="https://www.ncbi.nlm.nih.gov/research/pubtator/" target="_blank">Pubtator</a>.
+
+#### Download resources
+* Download annotations from PubTator:
+~~~
+python download_resources.py --resources pubtator_central
+~~~
+<i>Note: The annotation data requires > 70GB of disk space.</i> 
 
 #### Learn entity embeddings
 Learning entity embeddings can be done in two steps:

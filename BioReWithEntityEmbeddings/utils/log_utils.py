@@ -15,7 +15,7 @@ class LogUtil(object):
 
     @staticmethod
     def create_logger(name: str, level=logging.DEBUG) -> Logger:
-        log_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        log_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
         logger = logging.getLogger(name)
         logger.setLevel(level)

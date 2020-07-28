@@ -2,7 +2,7 @@ import re
 import pandas as pd
 
 from concurrent.futures.thread import ThreadPoolExecutor
-
+from pathlib import Path
 from pandas import DataFrame
 from tqdm import tqdm
 from typing import List, Dict
@@ -74,9 +74,9 @@ class Pubtator(LoggingMixin):
 
         return rs_mutation_data
 
-    def read_raw_documents_from_offsets(self, offsets_file: str) -> List[str]:
+    def read_raw_documents_from_offsets(self, offsets_file: Path) -> List[str]:
         documents = list()
-        with open(offsets_file, "r", encoding="utf-8") as input_reader:
+        with open(str(offsets_file), "r", encoding="utf-8") as input_reader:
 
             document = None
             all_lines = input_reader.readlines()

@@ -9,20 +9,20 @@ import shutil
 from datetime import datetime
 from gensim.models import Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
-from io import IOBase
+from pathlib import Path
 from tqdm import tqdm
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from utils.log_utils import LoggingMixin
 
 
-class Doc2VecLearner(LoggingMixin):
+class Doc2VecEmbeddingLearner(LoggingMixin):
 
     def __init__(self):
         LoggingMixin.__init__(self)
 
-    def read_tagged_documents(self, csv_file: str, tag_splitter: str = ",") -> List[TaggedDocument]:
-        self.log_info("Start reading tagged documents from %s", csv_file)
+    def read_tagged_documents(self, csv_file: Path, tag_splitter: str = ",") -> List[TaggedDocument]:
+        self.log_info(f"Start reading tagged documents from {csv_file}")
         csv_data = pd.read_csv(csv_file, "\t", encoding="utf-8")
 
         tagged_documents = []
@@ -45,7 +45,7 @@ class Doc2VecLearner(LoggingMixin):
         self.log_info("Finished creation of vocabulary. Found %s terms", len(model.wv.vocab))
 
         for iteration in range(configuration["iterations"]):
-            self.log_info("Starting training iteration %s", (iteration + 1))
+            self.log_info(f"Starting training iteration {iteration + 1}")
             model.train(tagged_documents, total_examples=len(tagged_documents), epochs=1)
 
             # Reduce learning rate for the next iteration
@@ -62,59 +62,44 @@ class Doc2VecLearner(LoggingMixin):
         output_directory = configuration["output_directory"]
         model_name = configuration["model_name"]
 
-        self.log_info("Start saving model %s in %s", model_name, output_directory)
+        self.log_info(f"Start saving model {model_name }to {output_directory}")
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
-        model_file = os.path.join(output_directory, f"{model_name}.embs")
+        model_file = output_directory / f"{model_name}.embs"
 
-        model.save(model_file)
-        self.log_info("Saved model to %s", model_file)
+        model.save(str(model_file))
+        self.log_info(f"Saved model to {model_file}")
 
         # Save a copy of the configuration file
         config_file = configuration["config_file"]
-        file_name = self.get_file_name(config_file).replace(".json", "")
-        target_file  = os.path.join(output_directory, f"{file_name}.json")
-        shutil.copyfile(config_file, target_file)
-
-    def get_file_name(self, file_or_path: Union[str, IOBase]) -> str:
-        path = self.get_path(file_or_path)
-        last_index = path.rfind(os.path.sep)
-
-        return path[last_index + 1:] if last_index > 0 else path
-
-    def get_path(self, file_or_path: Union[str, IOBase]) -> str:
-        if isinstance(file_or_path, str):
-            return file_or_path
-        elif isinstance(file_or_path, IOBase):
-            return file_or_path.name
-        else:
-            raise AssertionError("Unknown type!")
+        target_file = output_directory / f"{model_name}_config.json"
+        shutil.copyfile(str(config_file), str(target_file))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Doc2Vec learner")
-    parser.add_argument("input_file", type=str,
+    parser.add_argument("--input_file", type=str, required=True,
                         help="Path to an tsv file containing the tagged documents")
-    parser.add_argument("config_file", type=str,
-                        help="Path to the training configuration (json) file")
-    parser.add_argument("output_dir", type=str,
-                        help="Path to the output directory")
-    parser.add_argument("model_name", type=str,
+    parser.add_argument("--config_file", type=str, required=True,
+                        help="Path to the Doc2Vec configuration file (in json format)")
+    parser.add_argument("--model_name", type=str, required=True,
                         help="Name of model to be trained")
+    parser.add_argument("--output_dir", type=str, required=True,
+                        help="Path to the output directory")
 
     arguments = parser.parse_args()
 
     # Load and extend training configuration
     configuration = json.load(open(arguments.config_file, "r", encoding="utf-8"))
     configuration["model_name"] = arguments.model_name
-    configuration["config_file"] = arguments.config_file
-    configuration["output_directory"] = arguments.output_dir
+    configuration["config_file"] = Path(arguments.config_file)
+    configuration["output_directory"] = Path(arguments.output_dir)
     configuration["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%s")
 
     # Load data and train model
-    doc2vec_learner = Doc2VecLearner()
-    tagged_documents = doc2vec_learner.read_tagged_documents(arguments.input_file)
+    doc2vec_learner = Doc2VecEmbeddingLearner()
+    tagged_documents = doc2vec_learner.read_tagged_documents(Path(arguments.input_file))
     model = doc2vec_learner.train_model(tagged_documents, configuration)
 
     # Save model

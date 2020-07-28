@@ -6,8 +6,8 @@ Learning for Biomedical Relationship Extraction" (Bioinformatics, 2020).
 The approach aims to perform biomedical relation extraction on corpus-level based on entity and 
 entity pair embeddings learned on the complete PubMed corpus. For this we use focus on all articles 
 mentioning a certain biomedical entity (e.g. mutation <i>V600E</i>) or pair of entities within the article 
-title or abstract. We concatenate all articles mention the entity / entity pair and apply <i>Doc2Vec</i> 
-to learn an embedding for each distinct entity resp. pair of entities.
+title or abstract. We concatenate all articles mention the entity / entity pair and apply paragraph vectors
+(<i>Le and Mikolov, 2014</i>) to learn an embedding for each distinct entity resp. pair of entities.
 
 ## Usage
 For the computing entity and entity pair embeddings we utilize the complete PubMed corpus and make 
@@ -16,22 +16,38 @@ use of the data and entity annotations provided by
 
 #### Learn entity embeddings
 Learning entity embeddings can be done in two steps:
-* Prepare the entity annotations:
+* Prepare entity annotations:
 ~~~
-python prepare_entity_dataset.py --working_dir <dir> --entity_type mutation
+python prepare_entity_dataset.py --working_dir _out --entity_type mutation
 ~~~
 We support entity types <i>disease</i>, <i>drug</i>, and <i>mutation</i>.
 
 * Run representation learning:
 ~~~
-python learn_doc2vec.py
+python learn_embeddings.py --input_file _out/mutation/doc2vec_input.txt \
+                           --config_file ../resources/configurations/doc2vec-0500.config \
+                           --model_name mutation-v0500 \
+                           --output_dir _out/mutation  
 ~~~
 Example configurations can be found in <i>resources/configurations</i>.
 
 #### Learn entity pair embeddings
 To learn entity pair embeddings, preparation of the entity annotations has to be performed 
-first (see above).
+first (see above). Analogously to the entity embeddings, learning of pair embeddings is 
+performed in two steps:
+* Prepare pair annotations:
+~~~
+python prepare_pair_dataset.py --working_dir _out --source_type mutation --target_type disease
+~~~
+We support entity types <i>disease</i>, <i>drug</i>, and <i>mutation</i>.
 
+* Run representation learning:
+~~~
+python learn_embeddings.py --input_file _out/mutation-disease/doc2vec_input.txt \
+                           --config_file ../resources/configurations/doc2vec-0500.config \
+                           --model_name mutation-disease-v0500
+                           --output_dir _out/mutation-disease  
+~~~
 
 ## Citation
 Please use the following bibtex entry to cite our work:

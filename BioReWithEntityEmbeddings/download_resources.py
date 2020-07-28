@@ -16,13 +16,15 @@ class ResourceDownloader(LoggingMixin):
     def download_and_unzip_archive(self, archive_url: str, cache_dir: Path):
         file_name = self.get_plain_archive_name(archive_url)
 
-        self.log_info(f"Downloading archive {archive_url}")
         file_path = cache_dir / file_name
         if file_path.exists():
             self.log_info(f"Archive {file_name} already in cache!")
             return
 
+        self.log_info(f"Downloading archive {archive_url}")
         cached_archive = self.cache_resource(archive_url, cache_dir)
+
+        self.log_info(f"Extracting archive {cached_archive}")
         self.unpack_file(cached_archive, cache_dir / file_name, keep=False)
 
     def download_file(self, file_url: str, cache_dir: Path):
@@ -125,8 +127,8 @@ class ResourceDownloader(LoggingMixin):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--resource", type=str, required=True, nargs="+",
-                        choices=["pubtator", "pubtator_central", "disease_ontology"],
+    parser.add_argument("--resources", type=str, required=True, nargs="+",
+                        choices=["pubtator_central", "disease_ontology"],
                         help="Resource to download")
 
     args = parser.parse_args()
@@ -134,25 +136,20 @@ if __name__ == "__main__":
     archives_to_download = []
     files_to_download = []
 
-    if "pubtator" in args.resource:
+    if "pubtator_central" in args.resources:
         archives_to_download += [
-            ("pubtator", "ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTator/chemical2pubtator.gz"),
-            ("pubtator", "ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTator/disease2pubtator.gz"),
-            ("pubtator", "ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTator/gene2pubtator.gz"),
-            ("pubtator", "ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTator/species2pubtator.gz"),
-            ("pubtator", "ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTator/mutation2pubtator.gz"),
-
-            ("pubtator", "ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTator/bioconcepts2pubtator_offsets.gz")
+            (
+                "pubtator_central",
+                "ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTatorCentral/bioconcepts2pubtatorcentral.offset.gz"
+            )
         ]
 
-    if "pubtator_central" in args.resource:
-        archives_to_download += [
-            ("pubtator_central", "ftp://ftp.ncbi.nlm.nih.gov/pub/lu/PubTatorCentral/bioconcepts2pubtatorcentral.offset.gz")
-        ]
-
-    if "disease_ontology" in args.resource:
+    if "disease_ontology" in args.resources:
         files_to_download += [
-            ("do", "https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/master/src/ontology/doid.obo")
+            (
+                "do",
+                "https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/master/src/ontology/doid.obo"
+            )
         ]
 
     cache_dir = Path("_cache")

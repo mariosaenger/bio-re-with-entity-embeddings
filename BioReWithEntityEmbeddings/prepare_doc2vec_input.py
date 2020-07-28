@@ -5,7 +5,7 @@ from pathlib import Path
 from tqdm import tqdm
 from typing import List
 
-from data.pubtator import Pubtator
+from data.pubtator import PubtatorCentral
 from utils.log_utils import LoggingMixin
 
 
@@ -27,10 +27,10 @@ class Doc2VecPreparation(LoggingMixin):
         input_data = pd.read_csv(input_file, delimiter="\t", encoding="utf-8")
         self.log_info(f"Found {len(input_data)} input lines in total")
 
-        pubtator = Pubtator()
+        pubtator = PubtatorCentral()
 
-        self.log_info(f"Reading PubTator articles from {article_file}")
-        raw_documents = pubtator.read_raw_documents_from_offsets(article_file)
+        self.log_info(f"Reading plain PubTator documents from {article_file}")
+        raw_documents = pubtator.read_plain_documents(article_file)
         self.log_info(f"Found {len(raw_documents)} raw documents in total")
 
         self.log_info("Parsing raw documents")

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List
 from tqdm import tqdm
 
-from data.pubtator import Pubtator
+from data.pubtator import PubtatorCentral
 from data.resources import PUBTATOR_OFFSET_FILE
 from utils.log_utils import LoggingMixin
 
@@ -27,7 +27,7 @@ class PubtatorArticleExtractor(LoggingMixin):
         self.log_info(f"Found {len(pubmed_ids)} distinct PubMed identifiers")
 
         self.log_info(f"Start reading documents from {offset_file}")
-        documents = Pubtator().read_raw_documents_from_offsets(offset_file)
+        documents = PubtatorCentral().read_plain_documents(offset_file)
         self.log_info("Found %s documents in total", len(documents))
 
         self.logger.info(f"Creating article extraction jobs (threads={threads} | batch-size={batch_size})")

@@ -5,9 +5,14 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from pathlib import Path
 from pandas import DataFrame
 from tqdm import tqdm
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
+from data.disease_ontology import DiseaseOntology
 from utils.log_utils import LoggingMixin
+
+
+TITLE_PATTERN = re.compile("([0-9]+)\\|t\\|(.*)")
+ABSTRACT_PATTERN = re.compile("([0-9]+)\\|a\\|(.*)")
 
 
 class Document(object):
@@ -25,59 +30,179 @@ class Document(object):
         return complete_text.strip()
 
 
-class Pubtator(LoggingMixin):
+class Annotation(object):
 
-    TITLE_PATTERN = re.compile("([0-9]+)\\|t\\|(.*)")
-    ABSTRACT_PATTERN = re.compile("([0-9]+)\\|a\\|(.*)")
+    def __init__(self, pubmed_id: str, entity_id: str, mention_text: str, start_offset: int, end_offset: int):
+        self.pubmed_id = pubmed_id
+        self.entity_id = entity_id
+        self.mention_text = mention_text
+        self.start_offset = start_offset
+        self.end_offset = end_offset
+
+
+class AnnotationExtractor(LoggingMixin):
 
     def __init__(self):
-        super(Pubtator, self).__init__()
+        super(AnnotationExtractor, self).__init__()
 
-    def build_disease_overview(self, disease2pubtator_file: str)-> DataFrame:
-        disease_data = pd.read_csv(disease2pubtator_file, sep="\t", encoding="utf-8", memory_map=True)
-        disease_overview = self._build_overview(disease_data, "MeshID")
-        disease_overview["mesh_term"] = disease_overview.index
+    def extract(self, plain_document: str) -> List[Annotation]:
+        title = None
+        abstract = None
+        annotations = []
 
-        return disease_overview
+        for line in plain_document.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
 
-    def build_mutation_overview(self, mutation2pubtator_file: str) -> DataFrame:
-        rs_mutation_data = self.read_mutation2pubtator_file(mutation2pubtator_file)
+            title_match = TITLE_PATTERN.match(line)
+            if title_match:
+                title = title_match.group(2)
+                continue
 
-        mutation_overview = self._build_overview(rs_mutation_data, "Components")
-        mutation_overview["rs_identifier"] = mutation_overview.index
+            abstract_match = ABSTRACT_PATTERN.match(line)
+            if abstract_match:
+                abstract = abstract_match.group(2)
+                continue
 
-        return mutation_overview
+            annotations += self.parse_annotation_line(line)
 
-    def build_drug_overview(self, drug2pubtator_file: str) -> DataFrame:
-        drug_data = pd.read_csv(drug2pubtator_file, sep="\t", encoding="utf-8", memory_map=True)
-        drug_overview = self._build_overview(drug_data, "MeshID")
-        drug_overview["MeshID"] = drug_overview.index
+        complete_text = title if title else ""
+        complete_text = complete_text + " " + abstract if abstract else complete_text
+        text_length = len(complete_text)
 
-        return drug_overview
+        result = []
+        for annotation in annotations:
+            if annotation.start_offset > text_length:
+                continue
 
-    def read_mutation2pubtator_file(self, mutation2pubtator_file: str) -> DataFrame:
-        mutation_data = pd.read_csv(mutation2pubtator_file, sep="\t", encoding="utf-8", memory_map=True)
+            assert complete_text[annotation.start_offset:annotation.end_offset] == annotation.mention_text
+            result += [annotation]
 
-        non_tmVar_data = mutation_data.loc[mutation_data["Resource"] != "tmVar"]
-        self.log_info("Found %s mutation mentions not tagged by tmVar", len(non_tmVar_data))
+        return result
 
-        tmVar_data = mutation_data.loc[mutation_data["Resource"] == "tmVar"]
-        self.log_info("Found %s mutation mentions tagged by tmVar", len(tmVar_data))
+    def parse_annotation_line(self, line: str) -> List[Annotation]:
+        raise NotImplementedError("Has to be implemented by subclasses!")
 
-        tmVar_rs_data = tmVar_data.loc[tmVar_data["Components"].str.contains("RS#:")]
-        tmVar_rs_data["Components"] = tmVar_rs_data["Components"].map(Pubtator._clean_tmVar_components)
-        self.log_info("Found %s mutation mentions with rs-identifier and tagged by tmVar", len(non_tmVar_data))
 
-        rs_mutation_data = pd.concat([non_tmVar_data, tmVar_rs_data])
-        rs_mutation_data = rs_mutation_data.loc[rs_mutation_data["Components"].str.startswith("rs")]
-        self.log_info("Found %s mutation instances with rs-identifier", len(rs_mutation_data))
+class MutationAnnotationExtractor(AnnotationExtractor):
 
-        return rs_mutation_data
+    def __init__(self):
+        super(MutationAnnotationExtractor, self).__init__()
 
-    def read_raw_documents_from_offsets(self, offsets_file: Path) -> List[str]:
+    def parse_annotation_line(self, line: str) -> List[Annotation]:
+        columns = line.split("\t")
+        if "Mutation" not in columns[4]:
+            return []
+
+        entity_id = columns[5]
+        if not "RS#:" in entity_id:
+            return []
+
+        rs_id = None
+        for id in entity_id.split(";"):
+            if id.startswith("RS#:"):
+                rs_id = id.replace("RS#:", "rs")
+                break
+
+        if not rs_id:
+            return []
+
+        return [
+            Annotation(
+                pubmed_id=columns[0],
+                entity_id=rs_id,
+                mention_text=columns[3],
+                start_offset=int(columns[1]),
+                end_offset=int(columns[2])
+            )
+        ]
+
+
+class DrugAnnotationExtractor(AnnotationExtractor):
+
+    def __init__(self, mesh_to_drugbank: DataFrame):
+        super(DrugAnnotationExtractor, self).__init__()
+        self.mesh_to_drugbank = mesh_to_drugbank
+
+    def parse_annotation_line(self, line: str) -> List[Annotation]:
+        columns = line.split("\t")
+        if "Chemical" not in columns[4]:
+            return []
+
+        annotations = []
+
+        drugbank_ids = self.get_drugbank_ids_by_mesh(columns[5])
+        for drugbank_id in drugbank_ids:
+            annotations += [
+                Annotation(
+                    pubmed_id=columns[0],
+                    entity_id=drugbank_id,
+                    mention_text=columns[3],
+                    start_offset=int(columns[1]),
+                    end_offset=int(columns[2])
+                )
+            ]
+
+        return annotations
+
+    def get_drugbank_ids_by_mesh(self, mesh: str) -> List[str]:
+        if mesh in self.mesh_to_drugbank.index:
+            return self.mesh_to_drugbank.loc[mesh]["DrugBankIDs"].split("|")
+
+        return []
+
+
+class DiseaseAnnotationExtractor(AnnotationExtractor):
+
+    def __init__(self, disease_ontology: DiseaseOntology = None):
+        super(DiseaseAnnotationExtractor, self).__init__()
+        self.disease_ontology = disease_ontology
+
+    def parse_annotation_line(self, line: str) -> List[Annotation]:
+        columns = line.split("\t")
+        if "Disease" not in columns[4]:
+            return []
+
+        mesh = columns[5]
+        disease_ids = [mesh] if not self.disease_ontology else \
+            self.disease_ontology.get_doid_by_mesh(mesh)
+
+        annotations = []
+        for disease_id in disease_ids:
+            annotations += [
+                Annotation(
+                    pubmed_id=columns[0],
+                    entity_id=disease_id,
+                    mention_text=columns[3],
+                    start_offset=int(columns[1]),
+                    end_offset=int(columns[2])
+                )
+            ]
+
+        return annotations
+
+
+class PubtatorCentral(LoggingMixin):
+
+    def __init__(self):
+        super(PubtatorCentral, self).__init__()
+
+    def extract_entity_annotations(self, offsets_file: Path, extractor: AnnotationExtractor) -> Tuple[DataFrame, DataFrame]:
+        plain_documents = self.read_plain_documents(offsets_file)
+
+        annotations = self.extract_annotations_parallel(
+            plain_documents=plain_documents,
+            annotation_extractor=extractor,
+            threads=16,
+            batch_size=2000
+        )
+
+        return self.build_mappings(annotations)
+
+    def read_plain_documents(self, offsets_file: Path) -> List[str]:
         documents = list()
         with open(str(offsets_file), "r", encoding="utf-8") as input_reader:
-
             document = None
             all_lines = input_reader.readlines()
             for line in tqdm(all_lines, desc="read-documents", total=len(all_lines)):
@@ -96,17 +221,82 @@ class Pubtator(LoggingMixin):
 
         return documents
 
-    def parse_raw_documents_parallel(self, raw_documents: List[str], threads: int, batch_size: int) -> Dict[str, Document]:
-        self.log_info("Start parsing % documents with %s threads and %s documents / thread", len(raw_documents), threads, batch_size)
+    def extract_annotations_parallel(self, plain_documents: List[str], annotation_extractor: AnnotationExtractor,
+                                     threads: int, batch_size: int) -> List[Annotation]:
+        self.log_info(f"Start extracting annotations from {len(plain_documents)} documents "
+                      f"(threads={threads}|batch-size={batch_size})")
+
+        def extract_annotations(documents: List[str]):
+            annotations = []
+            for plain_document in documents:
+                annotations += annotation_extractor.extract(plain_document)
+
+            return annotations
+
+        annotations = []
+        with ThreadPoolExecutor(max_workers=threads) as executor:
+            num_batches = (len(plain_documents) - 1) // batch_size + 1
+            futures = []
+
+            self.log_info(f"Submitting annotation extraction jobs")
+            for i in tqdm(range(0, len(plain_documents), batch_size), total=num_batches):
+                document_batch = plain_documents[i:i + batch_size]
+                future = executor.submit(extract_annotations, document_batch)
+                futures.append(future)
+
+            self.log_info("Collecting results")
+            for future in tqdm(futures, desc="collect-result", total=len(futures)):
+                annotations += future.result()
+
+            executor.shutdown()
+
+        self.log_info(f"Found {len(annotations)} in total")
+
+        return annotations
+
+    def build_mappings(self, annotations: List[Annotation]) -> Tuple[DataFrame, DataFrame]:
+        pubmed2entity = {}
+        entity2pubmed = {}
+
+        for annotation in annotations:
+            pubmed_id = annotation.pubmed_id
+            entity_id = annotation.entity_id
+
+            if not pubmed_id in pubmed2entity:
+                pubmed2entity[pubmed_id] = {
+                    "entity_ids": {entity_id}
+                }
+            else:
+                pubmed2entity[pubmed_id]["entity_ids"].add(entity_id)
+
+            if not entity_id in entity2pubmed:
+                entity2pubmed[entity_id] = {
+                    "articles": {pubmed_id}
+                }
+            else:
+                entity2pubmed[entity_id]["articles"].add(pubmed_id)
+
+        pubmed2entity = pd.DataFrame.from_dict(pubmed2entity, orient="index")
+        entity2pubmed = pd.DataFrame.from_dict(entity2pubmed, orient="index")
+
+        return pubmed2entity, entity2pubmed
+
+    def parse_raw_documents_parallel(self, raw_documents: List[str], threads: int,
+                                     batch_size: int) -> Dict[str, Document]:
+        self.log_info(f"Start parsing {len(raw_documents)} documents (threads={threads}|batch-size={batch_size})")
 
         parsed_documents = dict()
         with ThreadPoolExecutor(max_workers=threads) as executor:
-            self.log_info("Creating parsing %s jobs", int(len(raw_documents) / batch_size))
+            num_batches = (len(raw_documents) - 1) // batch_size + 1
+            self.log_info(f"Creating parsing {num_batches} jobs")
+
             futures = []
 
-            for i in tqdm(range(0, len(raw_documents), batch_size), desc="create-jobs", total=len(raw_documents) / batch_size):
+            for i in tqdm(range(0, len(raw_documents), batch_size),
+                          desc="create-jobs",
+                          total=len(raw_documents) / batch_size):
                 document_batch = raw_documents[i:i + batch_size]
-                future = executor.submit(Pubtator.parse_raw_documents, document_batch)
+                future = executor.submit(self.parse_raw_documents, document_batch)
                 futures.append(future)
 
             self.log_info("Collecting parse results")
@@ -117,41 +307,6 @@ class Pubtator(LoggingMixin):
             executor.shutdown()
 
         return parsed_documents
-
-    def read_documents_from_file(self, input_file: str) -> List[Document]:
-        documents = []
-
-        with open(input_file, encoding="utf-8") as input_reader:
-            pubmed_id = None
-            title = None
-            abstract = None
-
-            for line in input_reader:
-                line = line.strip()
-
-                if not line:
-                    if title is not None or abstract is not None:
-                        title = title if title is not None else ""
-                        abstract = abstract if abstract is not None else ""
-                        documents.append(Document(pubmed_id, title, abstract))
-
-                        pubmed_id=title=abstract= None
-
-                    continue
-
-                title_match = Pubtator.TITLE_PATTERN.match(line)
-                if title_match:
-                    pubmed_id = title_match.group(1)
-                    title = title_match.group(2)
-                    continue
-
-                abstract_match = Pubtator.ABSTRACT_PATTERN.match(line)
-                if abstract_match:
-                    pubmed_id = abstract_match.group(1)
-                    abstract = abstract_match.group(2)
-                    continue
-
-        return documents
 
     @staticmethod
     def parse_raw_documents(raw_documents: List[str]) -> Dict[str, Document]:
@@ -167,13 +322,13 @@ class Pubtator(LoggingMixin):
                 if not line:
                     continue
 
-                title_match = Pubtator.TITLE_PATTERN.match(line)
+                title_match = TITLE_PATTERN.match(line)
                 if title_match:
                     pubmed_id = title_match.group(1)
                     title = title_match.group(2)
                     continue
 
-                abstract_match = Pubtator.ABSTRACT_PATTERN.match(line)
+                abstract_match = ABSTRACT_PATTERN.match(line)
                 if abstract_match:
                     pubmed_id = abstract_match.group(1)
                     abstract = abstract_match.group(2)
@@ -182,51 +337,3 @@ class Pubtator(LoggingMixin):
             documents[pubmed_id] = Document(pubmed_id, title, abstract)
 
         return documents
-
-    def _build_overview(self, data_set: DataFrame, id_column: str) -> DataFrame:
-        ids = []
-        articles = []
-
-        group_by_id = data_set.groupby([id_column])
-        for id, rows in tqdm(group_by_id, total=len(group_by_id)):
-            ids.append(id)
-            articles.append(set([str(id) for id in rows["PMID"].unique()]))
-
-        return pd.DataFrame({"articles": articles}, index=ids)
-
-    @staticmethod
-    def _clean_tmVar_components(value: str) -> str:
-        components = value.split(";")
-        if len(components) == 2:
-            rs_identifier = components[1].replace("RS#:", "rs")
-            index = rs_identifier.rfind("|")
-            if index != -1:
-                rs_identifier = rs_identifier[:index]
-
-            return rs_identifier.strip()
-
-        return value
-
-
-class PubtatorPreparationUtils(LoggingMixin):
-
-    @staticmethod
-    def create_pubmed_id_to_entity_map(overview_data: DataFrame) -> DataFrame:
-        pubmed_to_entity_map = dict()
-
-        for id, row in tqdm(overview_data.iterrows(), total=len(overview_data)):
-            pubmed_articles = row["articles"]
-            for pubmed_id in pubmed_articles:
-                if pubmed_id not in pubmed_to_entity_map:
-                    pubmed_to_entity_map[pubmed_id] = {"entity_ids": set() }
-
-                pubmed_to_entity_map[pubmed_id]["entity_ids"].add(id)
-
-        return pd.DataFrame.from_dict(pubmed_to_entity_map, orient="index")
-
-    @staticmethod
-    def set_to_string(values):
-        if len(values) == 0:
-            return None
-
-        return ";;;".join([str(value) for value in sorted(values)])

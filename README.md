@@ -9,7 +9,7 @@ mentioning a certain biomedical entity (e.g. mutation <i>V600E</i>) or pair of e
 title or abstract. We concatenate all articles mention the entity / entity pair and apply paragraph vectors
 (<i>Le and Mikolov, 2014</i>) to learn an embedding for each distinct entity resp. pair of entities.
 
-| [Usage](#usage) | [Citation](#citation) | [Acknowledgements](#acknowledgements) |
+| [Usage](#usage) | [Supported Entity Types](#supported-entity-types) | [Citation](#citation) | [Acknowledgements](#acknowledgements) |
  
 ## Usage
 For the computing entity and entity pair embeddings we utilize the complete PubMed corpus and make 
@@ -58,6 +58,18 @@ python learn_embeddings.py --input_file _out/mutation-disease/doc2vec_input.txt 
                            --output_dir _out/mutation-disease  
 ~~~
 Example configurations can be found in <i>resources/configurations</i>.
+
+## Supported entity types
+
+| Entity Type  | Identifier  | Example  |
+|---|---|---|
+| Disease  | MeSH  | MESH:D006984 (<i>hypertrophic chondrocytes</i>) |
+|   |  Disease Ontology ID (DOID) | DOID:60155 ()  |
+| Drug  | Drugbank ID  | DB05217 ()  |
+| Mutation  | RS-Identifier  | rs1356828811 (<i>E64D</i>)  |
+
+
+
 
 ## Citation
 Please use the following bibtex entry to cite our work:

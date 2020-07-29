@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 
 import gensim.models.doc2vec
 import pandas as pd
@@ -60,18 +59,22 @@ class Doc2VecEmbeddingLearner(LoggingMixin):
 
     def save_doc2vec_model(self, model: Doc2Vec, configuration: Dict):
         output_directory = configuration["output_directory"]
+        output_directory.mkdir(parents=True, exist_ok=True)
+
         model_name = configuration["model_name"]
-
-        self.log_info(f"Start saving model {model_name }to {output_directory}")
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
-
         model_file = output_directory / f"{model_name}.embs"
 
+        self.log_info(f"Start saving model {model_name} to {output_directory}")
         model.save(str(model_file))
         self.log_info(f"Saved model to {model_file}")
 
+        self.log_info(f"Saving vocabulary")
+        vocab_file = output_directory / f"{model_name}.vocab"
+        with open(str(vocab_file), "w") as writer:
+            writer.write("\n".join(model.docvecs.doctags.keys()))
+
         # Save a copy of the configuration file
+        self.log_info(f"Saving configuration")
         config_file = configuration["config_file"]
         target_file = output_directory / f"{model_name}_config.json"
         shutil.copyfile(str(config_file), str(target_file))

@@ -1,4 +1,3 @@
-deprecated
 gensim
 nltk
 pandas

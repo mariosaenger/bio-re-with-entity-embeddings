@@ -46,11 +46,11 @@ class ResourceDownloader(LoggingMixin):
         # GET file object
         response = request.urlopen(resource_url)
         content_length = int(response.headers["content-length"])
-        block_size = 8192
+        block_size = 2048
 
         if content_length:
             length = int(content_length)
-            block_size = max(8192, length // 100)
+            block_size = min(2048, length // 100)
 
         total = int(content_length) if content_length is not None else None
         progress = tqdm(unit="B", total=total)

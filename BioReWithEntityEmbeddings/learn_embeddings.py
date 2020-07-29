@@ -20,7 +20,7 @@ class Doc2VecEmbeddingLearner(LoggingMixin):
     def __init__(self):
         LoggingMixin.__init__(self)
 
-    def read_tagged_documents(self, csv_file: Path, tag_splitter: str = ",") -> List[TaggedDocument]:
+    def read_tagged_documents(self, csv_file: Path, tag_splitter: str = ";;;") -> List[TaggedDocument]:
         self.log_info(f"Start reading tagged documents from {csv_file}")
         csv_data = pd.read_csv(csv_file, "\t", encoding="utf-8")
 

@@ -1,3 +1,4 @@
+import multiprocessing
 import re
 import pandas as pd
 
@@ -77,8 +78,9 @@ class AnnotationExtractor(LoggingMixin):
             if annotation.start_offset > text_length:
                 continue
 
-            assert complete_text[annotation.start_offset:annotation.end_offset] == annotation.mention_text
-            result += [annotation]
+            spanned_text = complete_text[annotation.start_offset:annotation.end_offset]
+            if spanned_text.lower() == annotation.mention_text.lower():
+                result += [annotation]
 
         return result
 
@@ -98,7 +100,7 @@ class DefaultEntityAnnotationExtractor(AnnotationExtractor):
             return []
 
         if len(columns) < 6:
-            self.log_warn(f"Unexpected line format: {line}")
+            #self.log_warn(f"Unexpected line format: {line}")
             return []
 
         entity_id = self.normalize_id(columns[5])
@@ -236,6 +238,14 @@ class SpeciesAnnotationExtractor(DefaultEntityAnnotationExtractor):
         return "TAXON:" + entity_id
 
 
+def extract_annotations(documents: List[str], annotation_extractor: AnnotationExtractor):
+    annotations = []
+    for plain_document in documents:
+        annotations += annotation_extractor.extract(plain_document)
+
+    return annotations
+
+
 class PubtatorCentral(LoggingMixin):
 
     def __init__(self):
@@ -247,18 +257,19 @@ class PubtatorCentral(LoggingMixin):
         annotations = self.extract_annotations_parallel(
             plain_documents=plain_documents,
             annotation_extractor=extractor,
-            threads=16,
+            processes=16,
             batch_size=2000
         )
 
         return self.build_mappings(annotations)
 
     def read_plain_documents(self, offsets_file: Path) -> List[str]:
+        self.log_info(f"Reading plain documents from {offsets_file}")
+
         documents = list()
         with open(str(offsets_file), "r", encoding="utf-8") as input_reader:
             document = None
-            all_lines = input_reader.readlines()
-            for line in tqdm(all_lines, desc="read-documents", total=len(all_lines)):
+            for line in input_reader:
                 line = line.strip()
 
                 if not line:
@@ -270,38 +281,28 @@ class PubtatorCentral(LoggingMixin):
                     document = ""
 
                 document = document + "\n" + line
-            input_reader.close()
 
         return documents
 
     def extract_annotations_parallel(self, plain_documents: List[str], annotation_extractor: AnnotationExtractor,
-                                     threads: int, batch_size: int) -> List[Annotation]:
+                                     processes: int, batch_size: int) -> List[Annotation]:
         self.log_info(f"Start extracting annotations from {len(plain_documents)} documents "
-                      f"(threads={threads}|batch-size={batch_size})")
-
-        def extract_annotations(documents: List[str]):
-            annotations = []
-            for plain_document in documents:
-                annotations += annotation_extractor.extract(plain_document)
-
-            return annotations
+                      f"(processes={processes}|batch-size={batch_size})")
 
         annotations = []
-        with ThreadPoolExecutor(max_workers=threads) as executor:
+        with multiprocessing.Pool(processes) as pool:
             num_batches = (len(plain_documents) - 1) // batch_size + 1
             futures = []
 
             self.log_info(f"Submitting annotation extraction jobs")
             for i in tqdm(range(0, len(plain_documents), batch_size), total=num_batches):
                 document_batch = plain_documents[i:i + batch_size]
-                future = executor.submit(extract_annotations, document_batch)
+                future = pool.apply_async(extract_annotations, [document_batch, annotation_extractor])
                 futures.append(future)
 
             self.log_info("Collecting results")
             for future in tqdm(futures, desc="collect-result", total=len(futures)):
-                annotations += future.result()
-
-            executor.shutdown()
+                annotations += future.get()
 
         self.log_info(f"Found {len(annotations)} in total")
 
@@ -341,13 +342,11 @@ class PubtatorCentral(LoggingMixin):
         parsed_documents = dict()
         with ThreadPoolExecutor(max_workers=threads) as executor:
             num_batches = (len(raw_documents) - 1) // batch_size + 1
-            self.log_info(f"Creating parsing {num_batches} jobs")
+            self.log_info(f"Creating jobs to parse the documents")
 
             futures = []
 
-            for i in tqdm(range(0, len(raw_documents), batch_size),
-                          desc="create-jobs",
-                          total=len(raw_documents) / batch_size):
+            for i in tqdm(range(0, len(raw_documents), batch_size), desc="create-jobs",total=num_batches):
                 document_batch = raw_documents[i:i + batch_size]
                 future = executor.submit(self.parse_raw_documents, document_batch)
                 futures.append(future)

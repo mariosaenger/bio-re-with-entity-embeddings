@@ -161,7 +161,7 @@ if __name__ == "__main__":
             offset_file=resources.get_pubtator_offset_file(),
             pubmed_ids_file=pubmed_ids_file,
             output_file=articles_file,
-            threads=16,
+            processes=16,
             batch_size=2000
         )
 
@@ -179,10 +179,10 @@ if __name__ == "__main__":
     ):
         extractor = Doc2VecPreparation()
         extractor.run(
-            input_file=instance_file,
-            id_columns=["source_id", "target_id"],
+            pubmed_to_ids_file=pubmed2pair_file,
+            pubmed_id_column="pubmed_id",
+            ids_column="pair_ids_str",
             article_file=articles_file,
-            article_column="articles_str",
             output_file=doc2vec_input_file
         )
     else:

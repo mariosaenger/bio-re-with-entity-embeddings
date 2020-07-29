@@ -9,9 +9,12 @@ from data.disease_ontology import DiseaseOntology
 from data.pubtator import (
     AnnotationExtractor,
     PubtatorCentral,
+    CelllineAnnotationExtractor,
     MutationAnnotationExtractor,
     DrugAnnotationExtractor,
-    DiseaseAnnotationExtractor, CelllineAnnotationExtractor, ChemicalAnnotationExtractor, GeneAnnotationExtractor,
+    DiseaseAnnotationExtractor,
+    ChemicalAnnotationExtractor,
+    GeneAnnotationExtractor,
     SpeciesAnnotationExtractor
 )
 from data.resource_handler import ResourceHandler
@@ -33,7 +36,6 @@ class EntityDataSetPreparation(LoggingMixin):
         entity_ds_dir = working_directory / entity_type
         entity_ds_dir.mkdir(parents=True, exist_ok=True)
 
-        self.log_info(f"Start extraction of mutation annotations from {pubtator_offset_file}")
         pubtator_central = PubtatorCentral()
         pubmed2entity, entity2pubmed = pubtator_central.extract_entity_annotations(
             offsets_file=pubtator_offset_file,
@@ -171,7 +173,7 @@ if __name__ == "__main__":
             offset_file=resources.get_pubtator_offset_file(),
             pubmed_ids_file=pubmed_ids_file,
             output_file=articles_file,
-            threads=16,
+            processes=16,
             batch_size=2000
         )
 
@@ -189,10 +191,10 @@ if __name__ == "__main__":
     ):
         extractor = Doc2VecPreparation()
         extractor.run(
-            input_file=instance_file,
-            id_columns=["entity_id"],
+            pubmed_to_ids_file=pubmed2entity_file,
+            pubmed_id_column="pubmed_id",
+            ids_column="entity_ids_str",
             article_file=articles_file,
-            article_column="articles_str",
             output_file=doc2vec_input_file
         )
 

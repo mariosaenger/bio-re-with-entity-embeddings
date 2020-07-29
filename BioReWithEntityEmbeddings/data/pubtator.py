@@ -5,7 +5,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from pathlib import Path
 from pandas import DataFrame
 from tqdm import tqdm
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 from data.disease_ontology import DiseaseOntology
 from utils.log_utils import LoggingMixin
@@ -71,6 +71,7 @@ class AnnotationExtractor(LoggingMixin):
         complete_text = complete_text + " " + abstract if abstract else complete_text
         text_length = len(complete_text)
 
+        # Only keep annotations which are in the title or abstract of the article (not in the full-text!)
         result = []
         for annotation in annotations:
             if annotation.start_offset > text_length:
@@ -85,38 +86,49 @@ class AnnotationExtractor(LoggingMixin):
         raise NotImplementedError("Has to be implemented by subclasses!")
 
 
-class MutationAnnotationExtractor(AnnotationExtractor):
+class DefaultEntityAnnotationExtractor(AnnotationExtractor):
 
-    def __init__(self):
-        super(MutationAnnotationExtractor, self).__init__()
+    def __init__(self, entity_type: str):
+        super(DefaultEntityAnnotationExtractor, self).__init__()
+        self.entity_type = entity_type.lower()
 
     def parse_annotation_line(self, line: str) -> List[Annotation]:
         columns = line.split("\t")
-        if "Mutation" not in columns[4]:
+        if self.entity_type not in columns[4].lower():
             return []
 
-        entity_id = columns[5]
-        if not "RS#:" in entity_id:
+        if len(columns) < 6:
+            self.log_warn(f"Unexpected line format: {line}")
             return []
 
-        rs_id = None
-        for id in entity_id.split(";"):
-            if id.startswith("RS#:"):
-                rs_id = id.replace("RS#:", "rs")
-                break
-
-        if not rs_id:
+        entity_id = self.normalize_id(columns[5])
+        if not entity_id:
             return []
 
         return [
             Annotation(
                 pubmed_id=columns[0],
-                entity_id=rs_id,
+                entity_id=entity_id,
                 mention_text=columns[3],
                 start_offset=int(columns[1]),
                 end_offset=int(columns[2])
             )
         ]
+
+    def normalize_id(self, entity_id: str) -> Optional[str]:
+        return entity_id
+
+
+class ChemicalAnnotationExtractor(DefaultEntityAnnotationExtractor):
+
+    def __init__(self):
+        super(ChemicalAnnotationExtractor, self).__init__("Chemical")
+
+
+class CelllineAnnotationExtractor(DefaultEntityAnnotationExtractor):
+
+    def __init__(self):
+        super(CelllineAnnotationExtractor, self).__init__("CellLine")
 
 
 class DrugAnnotationExtractor(AnnotationExtractor):
@@ -186,6 +198,42 @@ class DiseaseAnnotationExtractor(AnnotationExtractor):
             ]
 
         return annotations
+
+
+class GeneAnnotationExtractor(DefaultEntityAnnotationExtractor):
+
+    def __init__(self):
+        super(GeneAnnotationExtractor, self).__init__("Gene")
+
+    def normalize_id(self, entity_id: str) -> Optional[str]:
+        return "NCBI:" + entity_id
+
+
+class MutationAnnotationExtractor(DefaultEntityAnnotationExtractor):
+
+    def __init__(self):
+        super(MutationAnnotationExtractor, self).__init__("Mutation")
+
+    def normalize_id(self, entity_id: str) -> Optional[str]:
+        if not "RS#:" in entity_id:
+            return None
+
+        rs_id = None
+        for id in entity_id.split(";"):
+            if id.startswith("RS#:"):
+                rs_id = id.replace("RS#:", "rs")
+                break
+
+        return rs_id
+
+
+class SpeciesAnnotationExtractor(DefaultEntityAnnotationExtractor):
+
+    def __init__(self):
+        super(SpeciesAnnotationExtractor, self).__init__("Species")
+
+    def normalize_id(self, entity_id: str) -> Optional[str]:
+        return "TAXON:" + entity_id
 
 
 class PubtatorCentral(LoggingMixin):

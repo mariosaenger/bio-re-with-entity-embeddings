@@ -29,7 +29,8 @@ Learning entity embeddings can be done in two steps:
 ~~~
 python prepare_entity_dataset.py --working_dir _out --entity_type mutation
 ~~~
-We support entity types <i>disease</i>, <i>drug</i>, and <i>mutation</i>.
+We support entity types <i>cell line</i>, <i>chemical</i>, <i>disease</i>, <i>drug</i>, 
+<i>gene</i>, <i>mutation</i>, and <i>species</i>.
 
 * Run representation learning:
 ~~~
@@ -63,10 +64,14 @@ Example configurations can be found in <i>resources/configurations</i>.
 
 | Entity Type  | Identifier  | Example  |
 |---|---|---|
+| Cell line  | CVCL Identifier  | CVCL:U508 (<i>MN908947</i>)  |
+| Chemical  | MeSH  | MESH:D000068878 (<i>hTrastuzumab</i>) |
 | Disease  | MeSH  | MESH:D006984 (<i>hypertrophic chondrocytes</i>) |
-|   |  Disease Ontology ID (DOID) <sup id="a1">[1](#f1)</sup> | DOID:60155 (<i>visual agnosia</i>)  |
+|          |  Disease Ontology ID (DOID) <sup id="a1">[1](#f1)</sup> | DOID:60155 (<i>visual agnosia</i>)  |
 | Drug  | Drugbank ID  | DB00166 (<i>lipoic acid</i>)  |
-| Mutation  | RS-Identifier  | rs1356828811 (<i>E64D</i>)  |
+| Gene  | NCBI Gene ID  | NCBI:673 (<i>BRAF</i>)  |
+| Mutation  | RS-Identifier  | rs113488022 (<i>V600E</i>)  | 
+| Species  | NCBI Taxonomy  | TAXON:9606 (<i>human</i>)  | 
 
 <a id="f1">1</a>: Use option "<i>--entity_type disease-doid</i>" when calling `prepare_entity_dataset.py` to normalize 
 disease annotations to the Disease Ontology.  

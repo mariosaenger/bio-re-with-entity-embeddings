@@ -11,7 +11,8 @@ from data.pubtator import (
     PubtatorCentral,
     MutationAnnotationExtractor,
     DrugAnnotationExtractor,
-    DiseaseAnnotationExtractor
+    DiseaseAnnotationExtractor, CelllineAnnotationExtractor, ChemicalAnnotationExtractor, GeneAnnotationExtractor,
+    SpeciesAnnotationExtractor
 )
 from data.resource_handler import ResourceHandler
 from extract_articles import PubtatorArticleExtractor
@@ -83,7 +84,8 @@ if __name__ == "__main__":
     parser.add_argument("--working_dir", type=str, required=True,
                         help="Directory which will hold all (intermediate) output files")
     parser.add_argument("--entity_type", type=str, required=True,
-                        choices=["drug", "disease", "disease-doid", "mutation"],
+                        choices=["chemical", "cellline", "drug", "disease", "disease-doid",
+                                 "gene", "mutation", "species"],
                         help="Target entity type (drug, disease, or mutation)")
 
     # Optional parameters
@@ -121,16 +123,25 @@ if __name__ == "__main__":
             )
     ):
         extractor = None
-        if args.entity_type == "mutation":
-            extractor = MutationAnnotationExtractor()
-        elif args.entity_type == "drug":
-            mesh_to_drugbank_mapping = pd.read_csv(resources.get_mesh_to_drugbank_file(), sep="\t", )
-            extractor = DrugAnnotationExtractor(mesh_to_drugbank_mapping)
+
+        if args.entity_type == "cellline":
+            extractor = CelllineAnnotationExtractor()
+        elif args.entity_type == "chemical":
+            extractor = ChemicalAnnotationExtractor()
         elif args.entity_type == "disease":
             extractor = DiseaseAnnotationExtractor()
         elif args.entity_type == "disease-doid":
             disease_ontology = DiseaseOntology(resources.get_disease_ontology_tsv_file())
             extractor = DiseaseAnnotationExtractor(disease_ontology)
+        elif args.entity_type == "drug":
+            mesh_to_drugbank_mapping = pd.read_csv(resources.get_mesh_to_drugbank_file(), sep="\t")
+            extractor = DrugAnnotationExtractor(mesh_to_drugbank_mapping)
+        elif args.entity_type == "gene":
+            extractor = GeneAnnotationExtractor()
+        elif args.entity_type == "mutation":
+            extractor = MutationAnnotationExtractor()
+        elif args.entity_type == "species":
+            extractor = SpeciesAnnotationExtractor()
         else:
             raise NotImplementedError(f"Unsupported entity type {args.entity_type}")
 

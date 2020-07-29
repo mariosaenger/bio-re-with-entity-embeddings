@@ -7,7 +7,7 @@ from typing import List
 from tqdm import tqdm
 
 from data.pubtator import PubtatorCentral
-from data.resources import PUBTATOR_OFFSET_FILE
+from data.resource_handler import ResourceHandler
 from utils.log_utils import LoggingMixin
 
 
@@ -86,11 +86,22 @@ if __name__ == "__main__":
                         help="Path to the output file")
 
     # Optional parameters
+    parser.add_argument("--resource_dir", type=str, required=False, default="_resources",
+                        help="Path to the directory containing the resources")
     parser.add_argument("--threads", type=int, required=False, default=16,
                         help="Number of threads to use",)
     parser.add_argument("--batch_size", type=int, required=False, default=2000,
                         help="Number of documents per job")
     args = parser.parse_args()
 
+    resource_dir = Path(args.resource_dir)
+    resources = ResourceHandler(resource_dir)
+
     extractor = PubtatorArticleExtractor()
-    extractor.run(PUBTATOR_OFFSET_FILE, Path(args.pubmed_id_file), Path(args.output_file), args.threads, args.batch_size)
+    extractor.run(
+        offset_file=resources.get_pubtator_offset_file(),
+        pubmed_ids_file=Path(args.pubmed_id_file),
+        output_file=Path(args.output_file),
+        threads=args.threads,
+        batch_size=args.batch_size
+    )

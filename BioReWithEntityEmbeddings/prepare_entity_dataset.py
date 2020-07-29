@@ -13,7 +13,7 @@ from data.pubtator import (
     DrugAnnotationExtractor,
     DiseaseAnnotationExtractor
 )
-from data.resources import PUBTATOR_OFFSET_FILE, MESH_TO_DRUGBANK_MAPPING, DO_ONTOLOGY_FILE
+from data.resource_handler import ResourceHandler
 from extract_articles import PubtatorArticleExtractor
 from prepare_doc2vec_input import Doc2VecPreparation
 from utils.log_utils import LogUtil, LoggingMixin
@@ -25,18 +25,17 @@ class EntityDataSetPreparation(LoggingMixin):
     def __init__(self):
         super(EntityDataSetPreparation, self).__init__()
 
-    def run(self, working_directory: Path, entity_type: str, annotation_extractor: AnnotationExtractor):
+    def run(self, working_directory: Path, pubtator_offset_file: Path,
+            entity_type: str, annotation_extractor: AnnotationExtractor):
         self.log_info(f"Start preparation of PubMed {entity_type} occurrences")
 
         entity_ds_dir = working_directory / entity_type
         entity_ds_dir.mkdir(parents=True, exist_ok=True)
 
-        pubtator_offset_file = Path("_cache/pubtator/bioconcepts2pubtatorcentral.offset")
-
         self.log_info(f"Start extraction of mutation annotations from {pubtator_offset_file}")
         pubtator_central = PubtatorCentral()
         pubmed2entity, entity2pubmed = pubtator_central.extract_entity_annotations(
-            offsets_file=PUBTATOR_OFFSET_FILE,
+            offsets_file=pubtator_offset_file,
             extractor=annotation_extractor
         )
         self.log_info(f"Found {len(entity2pubmed)} distinct entities")
@@ -87,6 +86,9 @@ if __name__ == "__main__":
                         choices=["drug", "disease", "disease-doid", "mutation"],
                         help="Target entity type (drug, disease, or mutation)")
 
+    # Optional parameters
+    parser.add_argument("--resource_dir", type=str, required=False, default="_resources",
+                        help="Path to the directory containing the resources")
     parser.add_argument("--use_caching", type=bool, required=False, default=True,
                         help="Indicate whether to perform all preparation steps from scratch or use "
                              "existing results from previous executions.")
@@ -96,6 +98,9 @@ if __name__ == "__main__":
     logger.info(f"Start preparation of {args.entity_type} data set")
 
     use_caching = args.use_caching
+
+    resource_dir = Path(args.resource_dir)
+    resources = ResourceHandler(resource_dir)
 
     working_dir = Path(args.working_dir)
     entity_type_dir = working_dir / args.entity_type
@@ -119,12 +124,12 @@ if __name__ == "__main__":
         if args.entity_type == "mutation":
             extractor = MutationAnnotationExtractor()
         elif args.entity_type == "drug":
-            mesh_to_drugbank_mapping = pd.read_csv(MESH_TO_DRUGBANK_MAPPING, sep="\t", )
+            mesh_to_drugbank_mapping = pd.read_csv(resources.get_mesh_to_drugbank_file(), sep="\t", )
             extractor = DrugAnnotationExtractor(mesh_to_drugbank_mapping)
         elif args.entity_type == "disease":
             extractor = DiseaseAnnotationExtractor()
         elif args.entity_type == "disease-doid":
-            disease_ontology = DiseaseOntology(DO_ONTOLOGY_FILE)
+            disease_ontology = DiseaseOntology(resources.get_disease_ontology_tsv_file())
             extractor = DiseaseAnnotationExtractor(disease_ontology)
         else:
             raise NotImplementedError(f"Unsupported entity type {args.entity_type}")
@@ -132,6 +137,7 @@ if __name__ == "__main__":
         entity_preparation = EntityDataSetPreparation()
         entity_preparation.run(
             working_directory=working_dir,
+            pubtator_offset_file=resources.get_pubtator_offset_file(),
             entity_type=args.entity_type,
             annotation_extractor=extractor
         )
@@ -151,7 +157,7 @@ if __name__ == "__main__":
     ):
         extractor = PubtatorArticleExtractor()
         extractor.run(
-            offset_file=PUBTATOR_OFFSET_FILE,
+            offset_file=resources.get_pubtator_offset_file(),
             pubmed_ids_file=pubmed_ids_file,
             output_file=articles_file,
             threads=16,

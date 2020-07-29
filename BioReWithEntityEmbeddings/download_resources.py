@@ -8,24 +8,26 @@ import urllib.request as request
 from pathlib import Path
 from tqdm import tqdm
 
+from data.disease_ontology import DiseaseOntologyHandler
+from data.resource_handler import ResourceHandler
 from utils.log_utils import LoggingMixin
 
 
 class ResourceDownloader(LoggingMixin):
 
-    def download_and_unzip_archive(self, archive_url: str, cache_dir: Path):
+    def download_and_unzip_archive(self, archive_url: str, resource_dir: Path):
         file_name = self.get_plain_archive_name(archive_url)
 
-        file_path = cache_dir / file_name
+        file_path = resource_dir / file_name
         if file_path.exists():
             self.log_info(f"Archive {file_name} already in cache!")
             return
 
         self.log_info(f"Downloading archive {archive_url}")
-        cached_archive = self.cache_resource(archive_url, cache_dir)
+        cached_archive = self.cache_resource(archive_url, resource_dir)
 
         self.log_info(f"Extracting archive {cached_archive}")
-        self.unpack_file(cached_archive, cache_dir / file_name, keep=False)
+        self.unpack_file(cached_archive, resource_dir / file_name, keep=False)
 
     def download_file(self, file_url: str, cache_dir: Path):
         self.cache_resource(file_url, cache_dir)
@@ -131,6 +133,9 @@ if __name__ == "__main__":
                         choices=["pubtator_central", "disease_ontology"],
                         help="Resource to download")
 
+    # Optional parameters
+    parser.add_argument("--resource_dir", type=str, required=False, default="_resources",
+                        help="Path to the directory storing the resources")
     args = parser.parse_args()
 
     archives_to_download = []
@@ -152,16 +157,22 @@ if __name__ == "__main__":
             )
         ]
 
-    cache_dir = Path("_cache")
+    resource_dir = Path(args.resource_dir)
 
     downloader = ResourceDownloader()
     for resource, archive_url in archives_to_download:
-        downloader.download_and_unzip_archive(archive_url, cache_dir / resource)
+        downloader.download_and_unzip_archive(archive_url, resource_dir / resource)
 
     for resource, file_url in files_to_download:
-        downloader.download_file(file_url, cache_dir / resource)
+        downloader.download_file(file_url, resource_dir / resource)
 
+    if "disease_ontology" in args.resources:
+        resources = ResourceHandler(resource_dir)
 
+        DiseaseOntologyHandler().prepare_ontology(
+            obo_file=resources.get_disease_ontology_obo_file(),
+            output_file=resources.get_disease_ontology_tsv_file()
+        )
 
 
 

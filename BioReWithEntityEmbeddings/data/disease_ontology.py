@@ -1,18 +1,17 @@
-import os
 import pandas as pd
 
 from typing import List, Optional, Set
 from pandas import DataFrame
+from pathlib import Path
 from tqdm import tqdm
 
-from data.resources import DO_DOID_FILE, DO_DIR
 from utils.log_utils import LoggingMixin
 
 
 class DiseaseOntology(LoggingMixin):
 
-    def __init__(self, ontology_tsv: str):
-        super(DiseaseOntology, self).__init__(self.__class__.__name__)
+    def __init__(self, ontology_tsv: Path):
+        super(DiseaseOntology, self).__init__()
         self.ontology = pd.read_csv(ontology_tsv, sep="\t", encoding="utf8", index_col="id")
         self.mesh_to_doid_map = None
         self.synonym_to_doid_map = None
@@ -141,20 +140,19 @@ class DiseaseOntologyHandler(LoggingMixin):
     def __init__(self):
         super(DiseaseOntologyHandler, self).__init__(self.__class__.__name__)
 
-    def prepare_ontology(self, obo_file: str, output_dir: str) -> DataFrame:
+    def prepare_ontology(self, obo_file: Path, output_file: Path) -> DataFrame:
         ontology_df = self.parse_obo_file(obo_file)
         ontology_df = self.append_paths(ontology_df)
 
-        ontology_file = os.path.join(output_dir, "ontology.tsv")
-        ontology_df.to_csv(ontology_file, sep="\t", encoding="utf8", index_label="id")
+        ontology_df.to_csv(output_file, sep="\t", encoding="utf8", index_label="id")
 
         return ontology_df
 
-    def parse_obo_file(self, obo_file: str) -> DataFrame:
+    def parse_obo_file(self, obo_file: Path) -> DataFrame:
         ontology = pd.DataFrame(columns=["doid", "name", "alternative_ids", "parent_ids", "mesh_terms"])
 
         self.log_info("Reading disease ontology data from %s", obo_file)
-        with open(obo_file, "r", encoding="utf-8") as do_reader:
+        with open(str(obo_file), "r", encoding="utf-8") as do_reader:
             file_content = [line.strip() for line in do_reader.readlines()]
 
             primary_doid = None
@@ -280,9 +278,4 @@ class DiseaseOntologyHandler(LoggingMixin):
             pass
 
         return "DOID:" + id
-
-
-if __name__ == "__main__":
-    handler = DiseaseOntologyHandler()
-    ontology = handler.prepare_ontology(DO_DOID_FILE, DO_DIR)
 

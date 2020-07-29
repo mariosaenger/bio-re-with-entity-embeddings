@@ -3,10 +3,9 @@ import logging
 import pandas as pd
 
 from pathlib import Path
-
 from tqdm import tqdm
 
-from data.resources import PUBTATOR_OFFSET_FILE
+from data.resource_handler import ResourceHandler
 from extract_articles import PubtatorArticleExtractor
 from prepare_doc2vec_input import Doc2VecPreparation
 from utils.log_utils import LogUtil, LoggingMixin
@@ -89,7 +88,9 @@ if __name__ == "__main__":
                         choices=["drug", "disease", "mutation"],
                         help="Type of the target entity (drug, disease, or mutation)")
 
-    # Optional arguments
+    # Optional parameters
+    parser.add_argument("--resource_dir", type=str, required=False, default="_resources",
+                        help="Path to the directory containing the resources")
     parser.add_argument("--use_caching", type=bool, required=False, default=True,
                         help="Indicate whether to perform all preparation steps from scratch or use "
                              "existing results from previous executions.")
@@ -100,6 +101,9 @@ if __name__ == "__main__":
     logger.info(f"Start preparation of {args.source_type}-{args.target_type} data set")
 
     use_caching = args.use_caching
+
+    resource_dir = Path(args.resource_dir)
+    resources = ResourceHandler(resource_dir)
 
     working_dir = Path(args.working_dir)
 
@@ -154,7 +158,7 @@ if __name__ == "__main__":
     ):
         extractor = PubtatorArticleExtractor()
         extractor.run(
-            offset_file=PUBTATOR_OFFSET_FILE,
+            offset_file=resources.get_pubtator_offset_file(),
             pubmed_ids_file=pubmed_ids_file,
             output_file=articles_file,
             threads=16,

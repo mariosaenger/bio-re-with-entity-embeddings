@@ -161,11 +161,12 @@ class DiseaseAnnotationExtractor(AnnotationExtractor):
 
     def parse_annotation_line(self, line: str) -> List[Annotation]:
         columns = line.split("\t")
-        if len(columns) < 6:
-            self.log_warn(f"Unexpected line format: {line}")
-            return []
 
         if "Disease" not in columns[4]:
+            return []
+
+        if len(columns) < 6:
+            self.log_warn(f"Unexpected line format: {line}")
             return []
 
         mesh = columns[5]

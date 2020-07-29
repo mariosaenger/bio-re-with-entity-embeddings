@@ -14,7 +14,7 @@ title or abstract. We concatenate all articles mention the entity / entity pair 
 ## Usage
 For the computing entity and entity pair embeddings we utilize the complete PubMed corpus and make 
 use of the data and entity annotations provided by 
-<a href="https://www.ncbi.nlm.nih.gov/research/pubtator/" target="_blank">PubTator Central</a>.
+[PubTator](https://www.ncbi.nlm.nih.gov/research/pubtator/){:target="_blank"}.
 
 #### Download resources
 * Download annotations from PubTator Central:

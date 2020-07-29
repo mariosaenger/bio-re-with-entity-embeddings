@@ -2,7 +2,6 @@ import multiprocessing
 import re
 import pandas as pd
 
-from concurrent.futures.thread import ThreadPoolExecutor
 from pathlib import Path
 from pandas import DataFrame
 from tqdm import tqdm
@@ -245,6 +244,35 @@ def extract_annotations(documents: List[str], annotation_extractor: AnnotationEx
 
     return annotations
 
+def parse_raw_documents(raw_documents: List[str]) -> Dict[str, Document]:
+    documents = dict()
+
+    for raw_document in raw_documents:
+        pubmed_id = None
+        title = None
+        abstract = None
+
+        for line in raw_document.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+
+            title_match = TITLE_PATTERN.match(line)
+            if title_match:
+                pubmed_id = title_match.group(1)
+                title = title_match.group(2)
+                continue
+
+            abstract_match = ABSTRACT_PATTERN.match(line)
+            if abstract_match:
+                pubmed_id = abstract_match.group(1)
+                abstract = abstract_match.group(2)
+                continue
+
+        documents[pubmed_id] = Document(pubmed_id, title, abstract)
+
+    return documents
+
 
 class PubtatorCentral(LoggingMixin):
 
@@ -304,7 +332,7 @@ class PubtatorCentral(LoggingMixin):
             for future in tqdm(futures, desc="collect-result", total=len(futures)):
                 annotations += future.get()
 
-        self.log_info(f"Found {len(annotations)} in total")
+        self.log_info(f"Found {len(annotations)} annotations in total")
 
         return annotations
 
@@ -340,7 +368,7 @@ class PubtatorCentral(LoggingMixin):
         self.log_info(f"Start parsing {len(raw_documents)} documents (threads={threads}|batch-size={batch_size})")
 
         parsed_documents = dict()
-        with ThreadPoolExecutor(max_workers=threads) as executor:
+        with multiprocessing.Pool(threads) as pool:
             num_batches = (len(raw_documents) - 1) // batch_size + 1
             self.log_info(f"Creating jobs to parse the documents")
 
@@ -348,44 +376,11 @@ class PubtatorCentral(LoggingMixin):
 
             for i in tqdm(range(0, len(raw_documents), batch_size), desc="create-jobs",total=num_batches):
                 document_batch = raw_documents[i:i + batch_size]
-                future = executor.submit(self.parse_raw_documents, document_batch)
+                future = pool.apply_async(parse_raw_documents, document_batch)
                 futures.append(future)
 
             self.log_info("Collecting parse results")
             for future in tqdm(futures, desc="collect-result", total=len(futures)):
                 parsed_documents.update(future.result())
 
-            self.log_info("Finished document parsing")
-            executor.shutdown()
-
         return parsed_documents
-
-    @staticmethod
-    def parse_raw_documents(raw_documents: List[str]) -> Dict[str, Document]:
-        documents = dict()
-
-        for raw_document in raw_documents:
-            pubmed_id = None
-            title = None
-            abstract = None
-
-            for line in raw_document.split("\n"):
-                line = line.strip()
-                if not line:
-                    continue
-
-                title_match = TITLE_PATTERN.match(line)
-                if title_match:
-                    pubmed_id = title_match.group(1)
-                    title = title_match.group(2)
-                    continue
-
-                abstract_match = ABSTRACT_PATTERN.match(line)
-                if abstract_match:
-                    pubmed_id = abstract_match.group(1)
-                    abstract = abstract_match.group(2)
-                    continue
-
-            documents[pubmed_id] = Document(pubmed_id, title, abstract)
-
-        return documents

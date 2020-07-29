@@ -64,7 +64,7 @@ Example configurations can be found in <i>resources/configurations</i>.
 
 | Entity Type  | Identifier  | Example  |
 |---|---|---|
-| Cell line  | CVCL Identifier  | CVCL:U508 (<i>MN908947</i>)  |
+| Cell line  | Cellosaurus ID  | CVCL:0027 (<i>Hep-G2</i>)  |
 | Chemical  | MeSH  | MESH:D000068878 (<i>hTrastuzumab</i>) |
 | Disease  | MeSH  | MESH:D006984 (<i>hypertrophic chondrocytes</i>) |
 |          |  Disease Ontology ID (DOID) <sup id="a1">[1](#f1)</sup> | DOID:60155 (<i>visual agnosia</i>)  |

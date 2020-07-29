@@ -178,7 +178,7 @@ class DiseaseAnnotationExtractor(AnnotationExtractor):
             return []
 
         if len(columns) < 6:
-            self.log_warn(f"Unexpected line format: {line}")
+            #self.log_warn(f"Unexpected line format: {line}")
             return []
 
         mesh = columns[5]

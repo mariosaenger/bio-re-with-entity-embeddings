@@ -84,13 +84,12 @@ if __name__ == "__main__":
     parser.add_argument("--working_dir", type=str, required=True,
                         help="Directory which will hold all (intermediate) output files")
     parser.add_argument("--entity_type", type=str, required=True,
-                        choices=["drug", "disease", "mutation"],
+                        choices=["drug", "disease", "disease-doid", "mutation"],
                         help="Target entity type (drug, disease, or mutation)")
 
     parser.add_argument("--use_caching", type=bool, required=False, default=True,
                         help="Indicate whether to perform all preparation steps from scratch or use "
                              "existing results from previous executions.")
-
     args = parser.parse_args()
 
     logger = LogUtil.create_logger("prepare_pair_dataset", logging.INFO)
@@ -123,6 +122,8 @@ if __name__ == "__main__":
             mesh_to_drugbank_mapping = pd.read_csv(MESH_TO_DRUGBANK_MAPPING, sep="\t", )
             extractor = DrugAnnotationExtractor(mesh_to_drugbank_mapping)
         elif args.entity_type == "disease":
+            extractor = DiseaseAnnotationExtractor()
+        elif args.entity_type == "disease-doid":
             disease_ontology = DiseaseOntology(DO_ONTOLOGY_FILE)
             extractor = DiseaseAnnotationExtractor(disease_ontology)
         else:

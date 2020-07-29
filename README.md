@@ -14,10 +14,10 @@ title or abstract. We concatenate all articles mention the entity / entity pair 
 ## Usage
 For the computing entity and entity pair embeddings we utilize the complete PubMed corpus and make 
 use of the data and entity annotations provided by 
-<a href="https://www.ncbi.nlm.nih.gov/research/pubtator/" target="_blank">Pubtator</a>.
+<a href="https://www.ncbi.nlm.nih.gov/research/pubtator/" target="_blank">PubTator Central</a>.
 
 #### Download resources
-* Download annotations from PubTator:
+* Download annotations from PubTator Central:
 ~~~
 python download_resources.py --resources pubtator_central
 ~~~
@@ -64,10 +64,12 @@ Example configurations can be found in <i>resources/configurations</i>.
 | Entity Type  | Identifier  | Example  |
 |---|---|---|
 | Disease  | MeSH  | MESH:D006984 (<i>hypertrophic chondrocytes</i>) |
-|   |  Disease Ontology ID (DOID) | DOID:60155 ()  |
-| Drug  | Drugbank ID  | DB05217 ()  |
+|   |  Disease Ontology ID (DOID) <sup id="a1">[1](#f1)</sup> | DOID:60155 (<i>visual agnosia</i>)  |
+| Drug  | Drugbank ID  | DB00166 (<i>lipoic acid</i>)  |
 | Mutation  | RS-Identifier  | rs1356828811 (<i>E64D</i>)  |
 
+<a id="f1">1</a>: Use option "<i>--entity_type disease-doid</i>" when calling `prepare_entity_dataset.py` to normalize 
+disease annotations to the Disease Ontology.  
 
 
 
@@ -84,5 +86,22 @@ Please use the following bibtex entry to cite our work:
 ```
 
 ## Acknowledgements
+* We use the annotations from <a href="https://www.ncbi.nlm.nih.gov/research/pubtator/" target="_blank">PubTator Central</a> 
+to compute the entity embeddings. For further details see [here](https://pubmed.ncbi.nlm.nih.gov/31114887/) and refer to:
 
+  Wei, Chih-Hsuan, et al. "<i>PubTator central: automated concept annotation for biomedical full text articles.</i>" 
+  Nucleic acids research 47.W1 (2019): W587-W593.
+ 
+* We use information from the <a href="https://disease-ontology.org/">Disease Ontology</a> to normalize disease annotations. For 
+further details see [here](https://pubmed.ncbi.nlm.nih.gov/30407550/) and refer to:
+
+  Schriml, Lynn M., et al. "<i>Human Disease Ontology 2018 update: classification, content and workflow expansion.</i>" 
+  Nucleic acids research 47.D1 (2019): D955-D962. 
+
+* We use the paragraph vectors model to perform entity representation learning. 
+For further details see [here](https://cs.stanford.edu/~quocle/paragraph_vector.pdf) and refer to:
+  
+  Le, Quoc, and Tomas Mikolov. "<i>Distributed representations of sentences and documents.</i>" 
+  International conference on machine learning. 2014.
+ 
 

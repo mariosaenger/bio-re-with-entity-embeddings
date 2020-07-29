@@ -117,6 +117,10 @@ class DefaultEntityAnnotationExtractor(AnnotationExtractor):
         ]
 
     def normalize_id(self, entity_id: str) -> Optional[str]:
+        # This seems to be a bug in the PubTator annotations!
+        if entity_id.startswith("*"):
+            return None
+
         return entity_id
 
 
@@ -234,6 +238,9 @@ class SpeciesAnnotationExtractor(DefaultEntityAnnotationExtractor):
         super(SpeciesAnnotationExtractor, self).__init__("Species")
 
     def normalize_id(self, entity_id: str) -> Optional[str]:
+        if entity_id.startswith("*"):
+            entity_id = entity_id[1:]
+
         return "TAXON:" + entity_id
 
 

@@ -5,7 +5,7 @@ from typing import List, Optional, Set
 from pandas import DataFrame
 from tqdm import tqdm
 
-from data.resources import DO_DOID_FILE, DO_DIR, DO_ONTOLOGY_FILE
+from data.resources import DO_DOID_FILE, DO_DIR
 from utils.log_utils import LoggingMixin
 
 

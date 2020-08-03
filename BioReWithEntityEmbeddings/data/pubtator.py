@@ -102,8 +102,8 @@ class DefaultEntityAnnotationExtractor(AnnotationExtractor):
             #self.log_warn(f"Unexpected line format: {line}")
             return []
 
-        entity_id = self.normalize_id(columns[5])
-        if not entity_id:
+        entity_ids = self.normalize_id(columns[5])
+        if not entity_ids:
             return []
 
         return [
@@ -114,14 +114,15 @@ class DefaultEntityAnnotationExtractor(AnnotationExtractor):
                 start_offset=int(columns[1]),
                 end_offset=int(columns[2])
             )
+            for entity_id in entity_ids
         ]
 
-    def normalize_id(self, entity_id: str) -> Optional[str]:
+    def normalize_id(self, entity_id: str) -> List[str]:
         # This seems to be a bug in the PubTator annotations!
         if entity_id.startswith("*"):
-            return None
+            return []
 
-        return entity_id
+        return [entity_id]
 
 
 class ChemicalAnnotationExtractor(DefaultEntityAnnotationExtractor):
@@ -129,11 +130,25 @@ class ChemicalAnnotationExtractor(DefaultEntityAnnotationExtractor):
     def __init__(self):
         super(ChemicalAnnotationExtractor, self).__init__("Chemical")
 
+    def normalize_id(self, entity_id: str) -> List[str]:
+        if not entity_id.startswith("MESH:"):
+            return []
+
+        return [entity_id]
+
 
 class CelllineAnnotationExtractor(DefaultEntityAnnotationExtractor):
 
     def __init__(self):
         super(CelllineAnnotationExtractor, self).__init__("CellLine")
+
+    def normalize_id(self, entity_id: str) -> Optional[str]:
+        if not entity_id.lower().startswith("cvcl:"):
+            return None
+
+        # Sometimes there are numbers next to the entity id
+        # (e.g. "CVCL:0013;-0.04388128228286364" in 32093423)
+        return entity_id.split(";")[0]
 
 
 class DrugAnnotationExtractor(AnnotationExtractor):
@@ -144,14 +159,17 @@ class DrugAnnotationExtractor(AnnotationExtractor):
 
     def parse_annotation_line(self, line: str) -> List[Annotation]:
         columns = line.split("\t")
-        if "Chemical" not in columns[4]:
+        if "Chemical" not in columns[4] or len(columns) < 6:
             return []
 
-        annotations = []
+        entity_id = columns[5]
+        if not entity_id.startswith("MESH:"):
+            return []
 
-        drugbank_ids = self.get_drugbank_ids_by_mesh(columns[5])
-        for drugbank_id in drugbank_ids:
-            annotations += [
+        entity_id = entity_id.split(";")[0]
+
+        drugbank_ids = self.get_drugbank_ids_by_mesh(entity_id)
+        return [
                 Annotation(
                     pubmed_id=columns[0],
                     entity_id=drugbank_id,
@@ -159,9 +177,8 @@ class DrugAnnotationExtractor(AnnotationExtractor):
                     start_offset=int(columns[1]),
                     end_offset=int(columns[2])
                 )
-            ]
-
-        return annotations
+                for drugbank_id in drugbank_ids
+        ]
 
     def get_drugbank_ids_by_mesh(self, mesh: str) -> List[str]:
         if mesh in self.mesh_to_drugbank.index:
@@ -187,12 +204,15 @@ class DiseaseAnnotationExtractor(AnnotationExtractor):
             return []
 
         mesh = columns[5]
+        if not (mesh.startswith("MESH:") or mesh.startswith("OMIM:")):
+            return []
+
+        mesh = mesh.split(",")[0]
+
         disease_ids = [mesh] if not self.disease_ontology else \
             self.disease_ontology.get_doid_by_mesh(mesh)
 
-        annotations = []
-        for disease_id in disease_ids:
-            annotations += [
+        return [
                 Annotation(
                     pubmed_id=columns[0],
                     entity_id=disease_id,
@@ -200,9 +220,8 @@ class DiseaseAnnotationExtractor(AnnotationExtractor):
                     start_offset=int(columns[1]),
                     end_offset=int(columns[2])
                 )
-            ]
-
-        return annotations
+                for disease_id in disease_ids
+        ]
 
 
 class GeneAnnotationExtractor(DefaultEntityAnnotationExtractor):
@@ -210,8 +229,14 @@ class GeneAnnotationExtractor(DefaultEntityAnnotationExtractor):
     def __init__(self):
         super(GeneAnnotationExtractor, self).__init__("Gene")
 
-    def normalize_id(self, entity_id: str) -> Optional[str]:
-        return "NCBI:" + entity_id
+    def normalize_id(self, entity_id: str) -> List[str]:
+        if not entity_id or entity_id == "None":
+            return []
+
+        return [
+            "NCBI:" + id
+            for id in entity_id.split(";")
+        ]
 
 
 class MutationAnnotationExtractor(DefaultEntityAnnotationExtractor):
@@ -219,17 +244,26 @@ class MutationAnnotationExtractor(DefaultEntityAnnotationExtractor):
     def __init__(self):
         super(MutationAnnotationExtractor, self).__init__("Mutation")
 
-    def normalize_id(self, entity_id: str) -> Optional[str]:
+    def normalize_id(self, entity_id: str) -> List[str]:
         if not "RS#:" in entity_id:
-            return None
+            return []
 
-        rs_id = None
+        entity_id = entity_id.replace("(Expired)", "")
+
+        plain_rs_id = None
         for id in entity_id.split(";"):
             if id.startswith("RS#:"):
-                rs_id = id.replace("RS#:", "rs")
+                plain_rs_id = id.replace("RS#:", "rs")
                 break
 
-        return rs_id
+        if not plain_rs_id:
+            return []
+
+        rs_ids = []
+        for rs_id in plain_rs_id.split(","):
+            rs_ids += [rs_id if rs_id.startswith("rs") else "rs" + rs_id]
+
+        return rs_ids
 
 
 class SpeciesAnnotationExtractor(DefaultEntityAnnotationExtractor):
@@ -237,11 +271,11 @@ class SpeciesAnnotationExtractor(DefaultEntityAnnotationExtractor):
     def __init__(self):
         super(SpeciesAnnotationExtractor, self).__init__("Species")
 
-    def normalize_id(self, entity_id: str) -> Optional[str]:
+    def normalize_id(self, entity_id: str) -> List[str]:
         if entity_id.startswith("*"):
             entity_id = entity_id[1:]
 
-        return "TAXON:" + entity_id
+        return ["TAXON:" + entity_id]
 
 
 def extract_annotations(documents: List[str], annotation_extractor: AnnotationExtractor):
@@ -250,6 +284,7 @@ def extract_annotations(documents: List[str], annotation_extractor: AnnotationEx
         annotations += annotation_extractor.extract(plain_document)
 
     return annotations
+
 
 def parse_raw_documents(raw_documents: List[str]) -> Dict[str, Document]:
     documents = dict()
@@ -292,8 +327,8 @@ class PubtatorCentral(LoggingMixin):
         annotations = self.extract_annotations_parallel(
             plain_documents=plain_documents,
             annotation_extractor=extractor,
-            processes=16,
-            batch_size=2000
+            processes=12,
+            batch_size=12500
         )
 
         return self.build_mappings(annotations)
@@ -325,19 +360,22 @@ class PubtatorCentral(LoggingMixin):
                       f"(processes={processes}|batch-size={batch_size})")
 
         annotations = []
-        with multiprocessing.Pool(processes) as pool:
-            num_batches = (len(plain_documents) - 1) // batch_size + 1
-            futures = []
+        pool = multiprocessing.Pool(processes)
+        num_batches = (len(plain_documents) - 1) // batch_size + 1
+        futures = []
 
-            self.log_info(f"Submitting annotation extraction jobs")
-            for i in tqdm(range(0, len(plain_documents), batch_size), total=num_batches):
-                document_batch = plain_documents[i:i + batch_size]
-                future = pool.apply_async(extract_annotations, [document_batch, annotation_extractor])
-                futures.append(future)
+        self.log_info(f"Submitting annotation extraction jobs")
+        for i in tqdm(range(0, len(plain_documents), batch_size), total=num_batches):
+            document_batch = plain_documents[i:i + batch_size]
+            future = pool.apply_async(extract_annotations, [document_batch, annotation_extractor])
+            futures.append(future)
 
-            self.log_info("Collecting results")
-            for future in tqdm(futures, desc="collect-result", total=len(futures)):
-                annotations += future.get()
+        self.log_info("Collecting results")
+        for future in tqdm(futures, desc="collect-result", total=len(futures)):
+            annotations += future.get()
+
+        pool.close()
+        pool.join()
 
         self.log_info(f"Found {len(annotations)} annotations in total")
 
@@ -370,24 +408,27 @@ class PubtatorCentral(LoggingMixin):
 
         return pubmed2entity, entity2pubmed
 
-    def parse_raw_documents_parallel(self, raw_documents: List[str], threads: int,
+    def parse_raw_documents_parallel(self, raw_documents: List[str], processes: int,
                                      batch_size: int) -> Dict[str, Document]:
-        self.log_info(f"Start parsing {len(raw_documents)} documents (threads={threads}|batch-size={batch_size})")
+        self.log_info(f"Start parsing {len(raw_documents)} documents (threads={processes}|batch-size={batch_size})")
 
         parsed_documents = dict()
-        with multiprocessing.Pool(threads) as pool:
-            num_batches = (len(raw_documents) - 1) // batch_size + 1
-            self.log_info(f"Creating jobs to parse the documents")
+        pool = multiprocessing.Pool(processes)
+        num_batches = (len(raw_documents) - 1) // batch_size + 1
+        self.log_info(f"Creating jobs to parse the documents")
 
-            futures = []
+        futures = []
 
-            for i in tqdm(range(0, len(raw_documents), batch_size), desc="create-jobs",total=num_batches):
-                document_batch = raw_documents[i:i + batch_size]
-                future = pool.apply_async(parse_raw_documents, document_batch)
-                futures.append(future)
+        for i in tqdm(range(0, len(raw_documents), batch_size), desc="create-jobs",total=num_batches):
+            document_batch = raw_documents[i:i + batch_size]
+            future = pool.apply_async(parse_raw_documents, [document_batch])
+            futures.append(future)
 
-            self.log_info("Collecting parse results")
-            for future in tqdm(futures, desc="collect-result", total=len(futures)):
-                parsed_documents.update(future.result())
+        self.log_info("Collecting parse results")
+        for future in tqdm(futures, desc="collect-result", total=len(futures)):
+            parsed_documents.update(future.get())
+
+        pool.close()
+        pool.join()
 
         return parsed_documents

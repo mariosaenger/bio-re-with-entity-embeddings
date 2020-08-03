@@ -173,8 +173,8 @@ if __name__ == "__main__":
             offset_file=resources.get_pubtator_offset_file(),
             pubmed_ids_file=pubmed_ids_file,
             output_file=articles_file,
-            processes=16,
-            batch_size=2000
+            processes=12,
+            batch_size=120000
         )
 
         # Skipping caching for all following steps to prevent unintended caching issues

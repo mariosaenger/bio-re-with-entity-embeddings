@@ -136,7 +136,11 @@ if __name__ == "__main__":
             disease_ontology = DiseaseOntology(resources.get_disease_ontology_tsv_file())
             extractor = DiseaseAnnotationExtractor(disease_ontology)
         elif args.entity_type == "drug":
-            mesh_to_drugbank_mapping = pd.read_csv(resources.get_mesh_to_drugbank_file(), sep="\t")
+            mesh_to_drugbank_mapping = pd.read_csv(
+                filepath_or_buffer=resources.get_mesh_to_drugbank_file(),
+                sep="\t",
+                index_col="MeshID"
+            )
             extractor = DrugAnnotationExtractor(mesh_to_drugbank_mapping)
         elif args.entity_type == "gene":
             extractor = GeneAnnotationExtractor()
@@ -174,7 +178,7 @@ if __name__ == "__main__":
             pubmed_ids_file=pubmed_ids_file,
             output_file=articles_file,
             processes=12,
-            batch_size=120000
+            batch_size=80000
         )
 
         # Skipping caching for all following steps to prevent unintended caching issues

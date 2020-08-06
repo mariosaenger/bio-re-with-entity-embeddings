@@ -207,7 +207,7 @@ class DiseaseAnnotationExtractor(AnnotationExtractor):
         if not (mesh.startswith("MESH:") or mesh.startswith("OMIM:")):
             return []
 
-        mesh = mesh.split(",")[0]
+        mesh = mesh.split(";")[0]
 
         disease_ids = [mesh] if not self.disease_ontology else \
             self.disease_ontology.get_doid_by_mesh(mesh)

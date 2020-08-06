@@ -3,7 +3,6 @@ import pandas as pd
 
 from pathlib import Path
 from tqdm import tqdm
-from typing import List
 
 from data.pubtator import PubtatorCentral
 from utils.log_utils import LoggingMixin

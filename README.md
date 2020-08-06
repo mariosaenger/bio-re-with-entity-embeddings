@@ -1,7 +1,7 @@
 # Large-scale entity and entity pair embeddings
 This repository contains source code to learn dense semantic representations for biomedical 
-entities and pairs of entities as used in Sänger and Leser: "Large-scale Entity Representation 
-Learning for Biomedical Relationship Extraction" (Bioinformatics, 2020). 
+entities and pairs of entities as used in [Sänger and Leser: "Large-scale Entity Representation 
+Learning for Biomedical Relationship Extraction" (Bioinformatics, 2020)](https://doi.org/10.1093/bioinformatics/btaa674). 
 
 The approach aims to perform biomedical relation extraction on corpus-level based on entity and 
 entity pair embeddings learned on the complete PubMed corpus. For this we use focus on all articles 
@@ -9,9 +9,66 @@ mentioning a certain biomedical entity (e.g. mutation <i>V600E</i>) or pair of e
 title or abstract. We concatenate all articles mention the entity / entity pair and apply paragraph vectors
 (<i>Le and Mikolov, 2014</i>) to learn an embedding for each distinct entity resp. pair of entities.
 
-| [Usage](#usage) | [Supported Entity Types](#supported-entity-types) | [Citation](#citation) | [Acknowledgements](#acknowledgements) |
- 
+__Content:__ [Usage](#usage) | [Pre-trained Entity Embeddings](#pre-trained-entity-embeddings) | [Embedding Training](#train-your-own-embeddings) | [Supported Entity Types](#supported-entity-types) | [Citation](#citation) | [Acknowledgements](#acknowledgements) |
+
 ## Usage
+The implementation of the embeddings is based on [Gensim](https://radimrehurek.com/gensim/). The following snippet highlights the basic
+how to access the pre-trained embeddings.   
+```python
+from gensim.models import Doc2Vec
+
+# Loading pre-trained entity model
+model = Doc2Vec.load("_out/mutation/mutation-v0500.embs")
+
+# Print number of distinct entities of the model
+print(f"Distinct entities: {len(model.docvecs.doctags)}\n")
+
+# Get the embedding for an specific entity
+entity_embedding = model.docvecs["rs113488022"]
+print(f"Embedding of rs113488022:\n{entity_embedding}\n")
+
+# Find similar entities
+print("Most similar entities to rs113488022:")
+top5_nearest_neighbors = model.docvecs.most_similar("rs113488022", topn=5)
+for i, (entity_id, sim) in enumerate(top5_nearest_neighbors):
+    print(f" {i+1}: {entity_id} (similarity: {sim:.3f})")
+```
+This should output:
+```
+Distinct entities: 47498
+
+Embedding of rs113488022:
+[ 1.15715809e-01  4.90018785e-01 -6.05004542e-02 -8.35603476e-02
+  9.20398310e-02 -1.51171118e-01  4.01901715e-02 -2.36775234e-01
+  ...
+]
+
+Most similar entities to rs113488022:
+ 1: rs121913227 (similarity: 0.690)
+ 2: rs121913364 (similarity: 0.628)
+ 3: rs121913529 (similarity: 0.610)
+ 4: rs121913357 (similarity: 0.573)
+ 5: rs11554290 (similarity: 0.571)
+```
+
+## Pre-trained Entity Embeddings
+```diff
+! We currently re-train the entity embeddings according to the PubTator version from July, 2020.
+! We will make them available as soon as finished. 
+```
+| Entity Type  | Identifier | Distinct Entities  | v500  | v1000 | v1500 | v2000<br/>(recommend) |
+|---|---|---|---|---|---|---|
+| Cell line  | Cellosaurus ID  |   |
+| Chemical  | MeSH  |  |
+| Disease  | MeSH  |  |
+| Drug  | Drugbank ID  |   |
+| Gene  | NCBI Gene ID  |   |
+| Mutation  | RS-Identifier  |   | 
+| Species  | NCBI Taxonomy  |   | 
+ 
+ 
+
+## Train your own embeddings
 For the computing entity and entity pair embeddings we utilize the complete PubMed corpus and make 
 use of the data and entity annotations provided by [PubTator Central](https://www.ncbi.nlm.nih.gov/research/pubtator/).
 
@@ -74,8 +131,6 @@ Example configurations can be found in <i>resources/configurations</i>.
 
 <a id="f1">1</a>: Use option "<i>--entity_type disease-doid</i>" when calling `prepare_entity_dataset.py` to normalize 
 disease annotations to the Disease Ontology.  
-
-
 
 ## Citation
 Please use the following bibtex entry to cite our work:

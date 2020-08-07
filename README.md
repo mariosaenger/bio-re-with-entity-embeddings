@@ -12,8 +12,8 @@ title or abstract. We concatenate all articles mention the entity / entity pair 
 __Content:__ [Usage](#usage) | [Pre-trained Entity Embeddings](#pre-trained-entity-embeddings) | [Embedding Training](#train-your-own-embeddings) | [Supported Entity Types](#supported-entity-types) | [Citation](#citation) | [Acknowledgements](#acknowledgements) |
 
 ## Usage
-The implementation of the embeddings is based on [Gensim](https://radimrehurek.com/gensim/). The following snippet highlights the basic ways
-how to access the pre-trained embeddings.   
+The implementation of the embeddings is based on [Gensim](https://radimrehurek.com/gensim/). The following snippet highlights the basic use
+of the pre-trained embeddings.   
 ```python
 from gensim.models import Doc2Vec
 

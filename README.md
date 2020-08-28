@@ -15,21 +15,21 @@ __Content:__ [Usage](#usage) | [Pre-trained Entity Embeddings](#pre-trained-enti
 The implementation of the embeddings is based on [Gensim](https://radimrehurek.com/gensim/). The following snippet highlights the basic use
 of the pre-trained embeddings.   
 ```python
-from gensim.models import Doc2Vec
+from gensim.models import KeyedVectors
 
 # Loading pre-trained entity model
-model = Doc2Vec.load("_out/mutation/mutation-v0500.embs")
+model = KeyedVectors.load("mutation-v0500.model")
 
 # Print number of distinct entities of the model
-print(f"Distinct entities: {len(model.docvecs.doctags)}\n")
+print(f"Distinct entities: {len(model.vocab)}\n")
 
 # Get the embedding for an specific entity
-entity_embedding = model.docvecs["rs113488022"]
+entity_embedding = model["rs113488022"]
 print(f"Embedding of rs113488022:\n{entity_embedding}\n")
 
 # Find similar entities
 print("Most similar entities to rs113488022:")
-top5_nearest_neighbors = model.docvecs.most_similar("rs113488022", topn=5)
+top5_nearest_neighbors = model.most_similar("rs113488022", topn=5)
 for i, (entity_id, sim) in enumerate(top5_nearest_neighbors):
     print(f" {i+1}: {entity_id} (similarity: {sim:.3f})")
 ```
@@ -52,20 +52,93 @@ Most similar entities to rs113488022:
 ```
 
 ## Pre-trained Entity Embeddings
+<table>
+    <tr>
+        <th>Entity Type</th>
+        <th>Identifier</th>
+        <th style="text-align: right">#Entities</th>
+        <th style="text-align: center">Vocabulary</th>
+        <th>v500</th>
+        <th>v1000</th>
+        <th>v1500</th>
+        <th>v2000</th>
+    </tr>
+    <tr>
+        <td>Cellline</td>
+        <td>Cellosaurus ID</td>
+        <td style="text-align: right">4,654</td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v0500.vocab">Vocab</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v0500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v1000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v1500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v2000.model" download target="_blank">Vectors</a></td>
+    </tr>
+    <tr>
+        <td>Chemical</td>
+        <td>MeSH</td>
+        <td style="text-align: right">109,716</td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v0500.vocab">Vocab</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v0500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v1000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v1500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v2000.model" download target="_blank">Vectors</a></td>
+    </tr>
+    <tr>
+        <td>Disease</td>
+        <td>MeSH</td>
+        <td style="text-align: right">10,712</td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v0500.vocab">Vocab</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v0500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"></td>
+        <td style="text-align: center"></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v2000.model" download target="_blank">Vectors</a></td>
+    </tr>
+    <tr>
+        <td>Drug</td>
+        <td>Drugbank ID</td>
+        <td style="text-align: right">5,966</td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v0500.vocab">Vocab</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v0500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v1000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v1500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v2000.model" download target="_blank">Vectors</a></td>
+    </tr>
+    <tr>
+        <td>Gene</td>
+        <td>NCBI Gene ID</td>
+        <td style="text-align: right">171,686</td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v0500.vocab">Vocab</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v0500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v1000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v1500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v2000.model" download target="_blank">Vectors</a></td>
+    </tr>
+    <tr>
+        <td>Mutation</td>
+        <td>RS-Identifier</td>
+        <td style="text-align: right">47,497</td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v0500.vocab">Vocab</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v0500.model dowload">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v1000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v1500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v2000.model" download target="_blank">Vectors</a></td>
+    </tr>
+    <tr>
+        <td>Species</td>
+        <td>NCBI Taxonomy</td>
+        <td style="text-align: right">176,989</td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/species/species-v0500.vocab">Vocab</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/species/species-v0500.model" download target="_blank" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"></td>
+        <td style="text-align: center"></td>
+        <td style="text-align: center"></td>
+    </tr>
+</table>
+
 ```diff
 ! We currently re-train the entity embeddings according to the PubTator version from July, 2020.
 ! We will make them available as soon as finished. 
 ```
-| Entity Type  | Identifier | Distinct Entities  | v500  | v1000 | v1500 | v2000<br/>(recommend) |
-|---|---|---|---|---|---|---|
-| Cell line  | Cellosaurus ID  |   |
-| Chemical  | MeSH  |  |
-| Disease  | MeSH  |  |
-| Drug  | Drugbank ID  |   |
-| Gene  | NCBI Gene ID  |   |
-| Mutation  | RS-Identifier  |   | 
-| Species  | NCBI Taxonomy  |   | 
- 
  
 
 ## Train your own embeddings

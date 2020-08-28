@@ -1,7 +1,7 @@
 from gensim.models import KeyedVectors
 
 # Loading pre-trained entity model
-model = KeyedVectors.load("_out/mutation-v0500.model")
+model = KeyedVectors.load("mutation-v0500.bin")
 
 # Print number of distinct entities of the model
 print(f"Distinct entities: {len(model.vocab)}\n")

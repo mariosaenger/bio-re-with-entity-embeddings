@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_file = output_dir / f"{model_file.stem}.model"
+    output_file = output_dir / f"{model_file.stem}.bin"
     print(f"Saving document vectors to {output_file}")
 
     # Save only the document vectors of the model

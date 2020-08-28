@@ -18,7 +18,7 @@ of the pre-trained embeddings.
 from gensim.models import KeyedVectors
 
 # Loading pre-trained entity model
-model = KeyedVectors.load("mutation-v0500.model")
+model = KeyedVectors.load("mutation-v0500.bin")
 
 # Print number of distinct entities of the model
 print(f"Distinct entities: {len(model.vocab)}\n")
@@ -68,67 +68,67 @@ Most similar entities to rs113488022:
         <td>Cellosaurus ID</td>
         <td style="text-align: right">4,654</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v0500.vocab">Vocab</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v0500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v1000.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v1500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v2000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v0500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v1000.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v1500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/cellline/cellline-v2000.bin" download target="_blank">Vectors</a></td>
     </tr>
     <tr>
         <td>Chemical</td>
         <td>MeSH</td>
         <td style="text-align: right">109,716</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v0500.vocab">Vocab</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v0500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v1000.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v1500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v2000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v0500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v1000.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v1500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/chemical/chemical-v2000.bin" download target="_blank">Vectors</a></td>
     </tr>
     <tr>
         <td>Disease</td>
         <td>MeSH</td>
         <td style="text-align: right">10,712</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v0500.vocab">Vocab</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v0500.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v0500.bin" download target="_blank">Vectors</a></td>
         <td style="text-align: center"></td>
         <td style="text-align: center"></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v2000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v2000.bin" download target="_blank">Vectors</a></td>
     </tr>
     <tr>
         <td>Drug</td>
         <td>Drugbank ID</td>
         <td style="text-align: right">5,966</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v0500.vocab">Vocab</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v0500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v1000.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v1500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v2000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v0500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v1000.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v1500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/drug/drug-v2000.bin" download target="_blank">Vectors</a></td>
     </tr>
     <tr>
         <td>Gene</td>
         <td>NCBI Gene ID</td>
         <td style="text-align: right">171,686</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v0500.vocab">Vocab</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v0500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v1000.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v1500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v2000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v0500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v1000.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v1500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/gene/gene-v2000.bin" download target="_blank">Vectors</a></td>
     </tr>
     <tr>
         <td>Mutation</td>
         <td>RS-Identifier</td>
         <td style="text-align: right">47,497</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v0500.vocab">Vocab</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v0500.model dowload">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v1000.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v1500.model" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v2000.model" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v0500.bin dowload">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v1000.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v1500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v2000.bin" download target="_blank">Vectors</a></td>
     </tr>
     <tr>
         <td>Species</td>
         <td>NCBI Taxonomy</td>
         <td style="text-align: right">176,989</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/species/species-v0500.vocab">Vocab</a></td>
-        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/species/species-v0500.model" download target="_blank" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/species/species-v0500.bin" download target="_blank" download target="_blank">Vectors</a></td>
         <td style="text-align: center"></td>
         <td style="text-align: center"></td>
         <td style="text-align: center"></td>

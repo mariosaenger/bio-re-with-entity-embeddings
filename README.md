@@ -131,7 +131,7 @@ Most similar entities to rs113488022:
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/species/species-v0500.bin" download target="_blank" download target="_blank">Vectors</a></td>
         <td style="text-align: center"></td>
         <td style="text-align: center"></td>
-        <td style="text-align: center"></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/species/species-v2000.bin" download target="_blank" download target="_blank">Vectors</a></td>
     </tr>
 </table>
 

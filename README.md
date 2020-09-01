@@ -89,7 +89,7 @@ Most similar entities to rs113488022:
         <td style="text-align: right">10,712</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v0500.vocab">Vocab</a></td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v0500.bin" download target="_blank">Vectors</a></td>
-        <td style="text-align: center"></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v1000.bin" download target="_blank">Vectors</a></td>
         <td style="text-align: center"></td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v2000.bin" download target="_blank">Vectors</a></td>
     </tr>

@@ -93,6 +93,16 @@ Most similar entities to rs113488022:
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v1500.bin" download target="_blank">Vectors</a></td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease/disease-v2000.bin" download target="_blank">Vectors</a></td>
     </tr>
+        <tr>
+        <td></td>
+        <td>DOID</td>
+        <td style="text-align: right">3,157</td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease-doid/disease-doid-v0500.vocab">Vocab</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease-doid/disease-doid-v0500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease-doid/disease-doid-v1000.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease-doid/disease-doid-v1500.bin" download target="_blank">Vectors</a></td>
+        <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/disease-doid/disease-doid-v2000.bin" download target="_blank">Vectors</a></td>
+    </tr>
     <tr>
         <td>Drug</td>
         <td>Drugbank ID</td>
@@ -116,7 +126,7 @@ Most similar entities to rs113488022:
     <tr>
         <td>Mutation</td>
         <td>RS-Identifier</td>
-        <td style="text-align: right">47,497</td>
+        <td style="text-align: right">47,498</td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v0500.vocab">Vocab</a></td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v0500.bin dowload">Vectors</a></td>
         <td style="text-align: center"><a href="https://www2.informatik.hu-berlin.de/~saengema/bio-entity-embeddings/v1/mutation/mutation-v1000.bin" download target="_blank">Vectors</a></td>
